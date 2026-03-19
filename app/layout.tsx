@@ -8,16 +8,24 @@ export const metadata: Metadata = {
   title: "slopwash — scrub AI from your writing",
   description:
     "A prompt that strips AI tells from any text. Copy it, paste it into your LLM, and get human-sounding output. Also available as an MCP server.",
+  icons: {
+    icon: [
+      { url: "/slopwash-icon.png", type: "image/png" },
+    ],
+    apple: "/slopwash-icon.png",
+  },
   openGraph: {
     title: "slopwash",
     description: "Scrub AI tells from your writing. Copy the prompt or use the MCP endpoint.",
     type: "website",
     url: "https://slopwash.com",
+    images: [{ url: "/slopwash-icon.png" }],
   },
   twitter: {
     card: "summary",
     title: "slopwash",
     description: "Scrub AI tells from your writing.",
+    images: ["/slopwash-icon.png"],
   },
 };
 
