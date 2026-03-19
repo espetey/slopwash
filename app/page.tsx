@@ -106,7 +106,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="pt-12 pb-6 px-6 text-center flex flex-col items-center">
-        <Image src="/slopwash-heavy.png" alt="slopwash" width={480} height={112} className="h-24 sm:h-32 w-auto" priority />
+        <Image src="/slopwash-md.png" alt="slopwash" width={480} height={112} className="h-24 sm:h-32 w-auto" priority />
         <p className="mt-3 text-zinc-400 text-sm max-w-lg mx-auto">
           A super prompt that scrubs AI tells from any text. Copy it, paste it into
           your LLM, and get output that reads like a human wrote it.
