@@ -528,7 +528,7 @@ message = client.messages.create(
 
       {/* Footer */}
       <footer className="py-8 text-center text-xs text-zinc-600">
-        slopwash &middot; &copy; 2026 Slopwash International Corporation of Earth.com, LLX &middot; no tracking
+        slopwash &middot; <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">@slopwash</a> &middot; &copy; 2026 Slopwash International Corporation of Earth.com, LLX &middot; no tracking
       </footer>
     </div>
   );
