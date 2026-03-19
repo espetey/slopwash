@@ -581,7 +581,7 @@ message = client.messages.create(
 
       {/* Footer */}
       <footer className="py-8 text-center text-xs text-zinc-600">
-        slopwash &middot; &copy; 2026 &middot; no tracking
+        slopwash &middot; &copy; 2026 Slopwash International Corporation, Inc. &middot; no tracking
       </footer>
     </div>
   );
