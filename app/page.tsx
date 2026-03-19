@@ -6,11 +6,23 @@ import { personas } from "@/lib/personas";
 import { buildPrompt } from "@/lib/prompt";
 
 export default function Home() {
-  const [activePersona, setActivePersona] = useState("none");
+  const [activePersonas, setActivePersonas] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
   const promptRef = useRef<HTMLPreElement>(null);
 
-  const prompt = buildPrompt(activePersona);
+  const prompt = buildPrompt(Array.from(activePersonas));
+
+  const togglePersona = useCallback((id: string) => {
+    setActivePersonas((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -69,12 +81,12 @@ export default function Home() {
             {personas.map((p) => (
               <button
                 key={p.id}
-                onClick={() => setActivePersona(p.id)}
+                onClick={() => togglePersona(p.id)}
                 className={`
                   px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200
                   border cursor-pointer
                   ${
-                    activePersona === p.id
+                    activePersonas.has(p.id)
                       ? "bg-teal-500/15 border-teal-500/40 text-teal-300 shadow-[0_0_12px_-3px_rgba(45,212,191,0.25)]"
                       : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300"
                   }
@@ -93,10 +105,13 @@ export default function Home() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
             <span className="text-xs text-zinc-500 font-mono">
               slopwash prompt
-              {activePersona !== "none" && (
+              {activePersonas.size > 0 && (
                 <span className="text-teal-500/80">
                   {" "}
-                  + {personas.find((p) => p.id === activePersona)?.label}
+                  + {personas
+                    .filter((p) => activePersonas.has(p.id))
+                    .map((p) => p.label)
+                    .join(", ")}
                 </span>
               )}
             </span>

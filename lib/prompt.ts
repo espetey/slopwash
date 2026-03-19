@@ -104,15 +104,16 @@ const SUFFIX = `
 
 Now rewrite the following text, applying all rules above. Return only the rewritten text with no preamble, no explanation, and no meta-commentary.`;
 
-export function buildPrompt(personaId?: string): string {
-  const persona = personaId && personaId !== "none"
-    ? personas.find((p) => p.id === personaId)
-    : null;
+export function buildPrompt(personaIds?: string[]): string {
+  const activePersonas = (personaIds ?? [])
+    .map((id) => personas.find((p) => p.id === id))
+    .filter((p) => p?.instructions);
 
   let prompt = PREAMBLE + CORE_RULES;
 
-  if (persona?.instructions) {
-    prompt += `\n\n---\n\n${persona.instructions}`;
+  if (activePersonas.length > 0) {
+    const overlays = activePersonas.map((p) => p!.instructions).join("\n\n");
+    prompt += `\n\n---\n\n${overlays}`;
   }
 
   prompt += SUFFIX;

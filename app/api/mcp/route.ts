@@ -12,17 +12,17 @@ function createServer() {
 
   server.tool(
     "get_slopwash_prompt",
-    "Get the slopwash prompt that scrubs AI tells from writing. Optionally specify a persona to add voice/tone overlay. Use as a system prompt, then paste in text to be rewritten.",
+    "Get the slopwash prompt that scrubs AI tells from writing. Optionally specify one or more personas to add voice/tone overlays. Use as a system prompt, then paste in text to be rewritten.",
     {
-      persona: z
-        .enum(personaIds as [string, ...string[]])
+      personas: z
+        .array(z.enum(personaIds as [string, ...string[]]))
         .optional()
         .describe(
-          "Optional persona to overlay on the base prompt. Choices: none (default), researcher, technologist, scientist, journalist, humorist, manager"
+          "Optional persona(s) to overlay on the base prompt. Choices: researcher, technologist, scientist, journalist, humorist, manager, marketer, sales"
         ),
     },
-    async ({ persona }) => {
-      const prompt = buildPrompt(persona);
+    async ({ personas }) => {
+      const prompt = buildPrompt(personas);
       return {
         content: [{ type: "text" as const, text: prompt }],
       };
