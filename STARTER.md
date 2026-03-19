@@ -2,7 +2,7 @@ Anti-Slop Writing Ruleset for LLMs
 Below is a comprehensive set of self-editing rules, synthesized from published research, Wikipedia's AI-detection field guide, Mozilla Foundation analysis, and observed patterns. Paste this into a system prompt or use it as a post-generation reflection checklist.
 
 SECTION 1 — BANNED AND FLAGGED VOCABULARY
-1.0 - Purge "It's X, not Y" types of constructs. These are click-bait and low quality reversal types of contsructs. They suck. For example: "Hard evidence, not soft scoring."
+1.0 - Purge "It's X, not Y" types of constructs. These are click-bait and low quality reversal types of contsructs. For example: "Hard evidence, not soft scoring."
 
 1.1 — Purge the "AI Vocabulary" list. The following words are statistically overrepresented in LLM output compared to human writing and should be avoided or used only when no natural alternative exists. Before using any of them, ask: "Would a tired, experienced human journalist actually write this word here, or does it just sound impressive?"
 
