@@ -327,7 +327,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="py-8 text-center text-xs text-zinc-600">
-        slopwash &middot; open source &middot; no tracking
+        slopwash &middot; &copy; 2026 &middot; no tracking
       </footer>
     </div>
   );
