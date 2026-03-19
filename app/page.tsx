@@ -36,14 +36,28 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 w-full border-b border-zinc-800/60 bg-[#09090b]/80 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto flex items-center justify-between px-4 sm:px-6 h-10">
+          <a href="#" className="text-sm font-semibold text-teal-400 tracking-tight">
+            slopwash
+          </a>
+          <div className="flex items-center gap-5 text-xs text-zinc-500">
+            <a href="#how-to-use" className="hover:text-zinc-300 transition-colors">How to use</a>
+            <a href="#mcp-server" className="hover:text-zinc-300 transition-colors">MCP server</a>
+            <a href="#mcp-quick-start" className="hover:text-zinc-300 transition-colors">Quick start</a>
+          </div>
+        </div>
+      </nav>
+
       {/* Header */}
-      <header className="pt-16 pb-10 px-6 text-center">
-        <h1 className="text-5xl sm:text-6xl font-bold tracking-tight">
+      <header className="pt-10 pb-6 px-6 text-center">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-300">
             slopwash
           </span>
         </h1>
-        <p className="mt-4 text-zinc-400 text-lg max-w-xl mx-auto">
+        <p className="mt-2 text-zinc-400 text-sm max-w-lg mx-auto">
           A prompt that scrubs AI tells from any text. Copy it, paste it into
           your LLM, and get output that reads like a human wrote it.
         </p>
@@ -108,7 +122,7 @@ export default function Home() {
           </div>
 
           {/* Scrollable prompt content */}
-          <div className="prompt-scroll overflow-auto max-h-[60vh]">
+          <div className="prompt-scroll overflow-auto max-h-[40vh]">
             <pre
               ref={promptRef}
               className="p-4 sm:p-6 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap font-mono selection:bg-teal-500/20"
@@ -120,7 +134,7 @@ export default function Home() {
 
         {/* Info section */}
         <section className="mt-12 grid gap-8 sm:grid-cols-2">
-          <div>
+          <div id="how-to-use" className="scroll-mt-14">
             <h2 className="text-sm font-semibold text-zinc-300 mb-2">
               How to use
             </h2>
@@ -133,7 +147,7 @@ export default function Home() {
               <li>Paste the AI-generated text you want cleaned up after it</li>
             </ol>
           </div>
-          <div>
+          <div id="mcp-server" className="scroll-mt-14">
             <h2 className="text-sm font-semibold text-zinc-300 mb-2">
               MCP server
             </h2>
@@ -153,7 +167,7 @@ export default function Home() {
         </section>
 
         {/* MCP Quick Start */}
-        <section className="mt-12">
+        <section id="mcp-quick-start" className="mt-12 scroll-mt-14">
           <h2 className="text-sm font-semibold text-zinc-300 mb-4">
             MCP quick start
           </h2>
