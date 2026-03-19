@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import Image from "next/image";
 import { personas } from "@/lib/personas";
 import { buildPrompt } from "@/lib/prompt";
 
@@ -39,8 +40,8 @@ export default function Home() {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 w-full border-b border-zinc-800/60 bg-[#09090b]/80 backdrop-blur-md">
         <div className="max-w-4xl mx-auto flex items-center justify-between px-4 sm:px-6 h-10">
-          <a href="#" className="text-sm font-semibold text-teal-400 tracking-tight">
-            slopwash
+          <a href="#" className="shrink-0">
+            <Image src="/slopwash-md.png" alt="slopwash" width={100} height={24} className="h-5 w-auto" priority />
           </a>
           <div className="flex items-center gap-4 text-xs text-zinc-500 overflow-x-auto">
             <a href="#how-to-use" className="hover:text-zinc-300 transition-colors whitespace-nowrap">How to use</a>
@@ -54,13 +55,9 @@ export default function Home() {
       </nav>
 
       {/* Header */}
-      <header className="pt-10 pb-6 px-6 text-center">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-300">
-            slopwash
-          </span>
-        </h1>
-        <p className="mt-2 text-zinc-400 text-sm max-w-lg mx-auto">
+      <header className="pt-10 pb-6 px-6 text-center flex flex-col items-center">
+        <Image src="/slopwash-md.png" alt="slopwash" width={280} height={64} className="h-14 sm:h-16 w-auto" priority />
+        <p className="mt-3 text-zinc-400 text-sm max-w-lg mx-auto">
           A prompt that scrubs AI tells from any text. Copy it, paste it into
           your LLM, and get output that reads like a human wrote it.
         </p>
