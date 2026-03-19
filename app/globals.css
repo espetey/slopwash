@@ -42,3 +42,25 @@ body {
   box-shadow: 0 0 80px -20px hsl(var(--accent) / 0.08),
               0 0 40px -10px hsl(var(--accent) / 0.05);
 }
+
+/* Psychedelic haze nav links */
+@keyframes haze-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.nav-link-haze {
+  background: linear-gradient(270deg, #2dd4bf, #a78bfa, #f472b6, #2dd4bf);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: haze-shift 6s ease infinite;
+  transition: filter 0.3s ease;
+  filter: blur(0.3px) saturate(0.7);
+}
+
+.nav-link-haze:hover {
+  filter: blur(0px) saturate(1.4) drop-shadow(0 0 6px rgba(45, 212, 191, 0.5)) drop-shadow(0 0 14px rgba(167, 139, 250, 0.35));
+}

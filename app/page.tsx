@@ -38,25 +38,20 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 w-full border-b border-zinc-800/60 bg-[#09090b]/80 backdrop-blur-md">
-        <div className="max-w-4xl mx-auto flex items-center justify-between px-4 sm:px-6 h-10">
-          <a href="#" className="shrink-0">
-            <Image src="/slopwash-md.png" alt="slopwash" width={100} height={24} className="h-5 w-auto" priority />
-          </a>
-          <div className="flex items-center gap-4 text-xs text-zinc-500 overflow-x-auto">
-            <a href="#how-to-use" className="hover:text-zinc-300 transition-colors whitespace-nowrap">How to use</a>
-            <a href="#mcp-quick-start" className="hover:text-zinc-300 transition-colors whitespace-nowrap">MCP</a>
-            <a href="#agent-instructions" className="hover:text-zinc-300 transition-colors whitespace-nowrap">Agent rules</a>
-            <a href="#chat-ui" className="hover:text-zinc-300 transition-colors whitespace-nowrap">Chat UI</a>
-            <a href="#api-usage" className="hover:text-zinc-300 transition-colors whitespace-nowrap">API</a>
-            <a href="#tips" className="hover:text-zinc-300 transition-colors whitespace-nowrap">Tips</a>
-          </div>
+      <nav className="sticky top-0 z-50 w-full bg-[#09090b]/80 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto flex items-center justify-center gap-6 px-4 sm:px-6 h-10 text-xs">
+            <a href="#how-to-use" className="nav-link-haze whitespace-nowrap">How to use</a>
+            <a href="#mcp-quick-start" className="nav-link-haze whitespace-nowrap">MCP</a>
+            <a href="#agent-instructions" className="nav-link-haze whitespace-nowrap">Agent rules</a>
+            <a href="#chat-ui" className="nav-link-haze whitespace-nowrap">Chat UI</a>
+            <a href="#api-usage" className="nav-link-haze whitespace-nowrap">API</a>
+            <a href="#tips" className="nav-link-haze whitespace-nowrap">Tips</a>
         </div>
       </nav>
 
       {/* Header */}
       <header className="pt-10 pb-6 px-6 text-center flex flex-col items-center">
-        <Image src="/slopwash-md.png" alt="slopwash" width={280} height={64} className="h-14 sm:h-16 w-auto" priority />
+        <Image src="/slopwash-md.png" alt="slopwash" width={400} height={96} className="h-20 sm:h-24 w-auto" priority />
         <p className="mt-3 text-zinc-400 text-sm max-w-lg mx-auto">
           A prompt that scrubs AI tells from any text. Copy it, paste it into
           your LLM, and get output that reads like a human wrote it.
@@ -76,7 +71,7 @@ export default function Home() {
                 key={p.id}
                 onClick={() => setActivePersona(p.id)}
                 className={`
-                  px-4 py-2 rounded-full text-sm font-medium transition-all duration-200
+                  px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200
                   border cursor-pointer
                   ${
                     activePersona === p.id
@@ -581,7 +576,7 @@ message = client.messages.create(
 
       {/* Footer */}
       <footer className="py-8 text-center text-xs text-zinc-600">
-        slopwash &middot; &copy; 2026 Slopwash International Corporation, Inc. &middot; no tracking
+        slopwash &middot; &copy; 2026 Slopwash International Corporation of Earth.com, LLX &middot; no tracking
       </footer>
     </div>
   );
