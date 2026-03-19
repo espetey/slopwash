@@ -18,7 +18,7 @@ function createServer() {
         .array(z.enum(personaIds as [string, ...string[]]))
         .optional()
         .describe(
-          "Optional persona(s) to overlay on the base prompt. Choices: researcher, technologist, scientist, journalist, humorist, manager, marketer, sales"
+          "Optional persona(s) to overlay on the base prompt. Choices: researcher, technologist, scientist, journalist, humorist, manager, marketer, sales, critic, historian, policy-analyst, economist, novelist"
         ),
     },
     async ({ personas }) => {

@@ -108,8 +108,9 @@ export default function Home() {
       <header className="pt-12 pb-6 px-6 text-center flex flex-col items-center">
         <Image src="/slopwash-md.png" alt="slopwash" width={480} height={112} className="h-24 sm:h-32 w-auto" priority />
         <p className="mt-3 text-zinc-400 text-sm max-w-lg mx-auto">
-          A super prompt that scrubs AI tells from any text. Copy it, paste it into
-          your LLM, and get output that reads like a human wrote it.
+          A prompt that removes AI-generated writing patterns from any text.
+          Copy it, paste it into your LLM, and get output that reads like a
+          human wrote it.
         </p>
         <div className="mt-4 flex items-center justify-center gap-5 text-xs">
           <a href="#how-to-use" className="nav-link-haze">How to use</a>
@@ -117,7 +118,7 @@ export default function Home() {
           <a href="#agent-instructions" className="nav-link-haze">Agent rules</a>
           <a href="#chat-ui" className="nav-link-haze">Chat UI</a>
           <a href="#api-usage" className="nav-link-haze">API</a>
-          <a href="#tips" className="nav-link-haze">Tips</a>
+          <a href="#things-to-know" className="nav-link-haze">Tips</a>
         </div>
       </header>
 
@@ -197,24 +198,25 @@ export default function Home() {
         <section className="mt-12 grid gap-8 sm:grid-cols-2">
           <div id="how-to-use" className="scroll-mt-14">
             <h2 className="text-sm font-semibold text-zinc-300 mb-2">
-              How to use
+              Getting started
             </h2>
             <ol className="text-sm text-zinc-500 space-y-1.5 list-decimal list-inside">
-              <li>Pick one or more personas (optional)</li>
+              <li>Pick one or more personas to layer in a specific voice (optional)</li>
               <li>Copy the prompt</li>
-              <li>
-                Paste it as a system prompt or before your text in any LLM
-              </li>
-              <li>Paste the AI-generated text you want cleaned up after it</li>
+              <li>Paste it as a system instruction or at the top of any LLM chat</li>
+              <li>Add the text you want cleaned</li>
             </ol>
+            <p className="text-xs text-zinc-600 mt-2">
+              Works with GPT-4o, Claude, Gemini, Llama, Mistral, and other models.
+            </p>
           </div>
           <div id="mcp-server" className="scroll-mt-14">
             <h2 className="text-sm font-semibold text-zinc-300 mb-2">
               MCP server
             </h2>
             <p className="text-sm text-zinc-500 mb-2">
-              Point your AI agent at the MCP endpoint to fetch this prompt
-              programmatically.
+              Connect through the MCP endpoint to let your AI agent fetch the
+              prompt programmatically instead of hardcoding it.
             </p>
             <code className="block text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono break-all">
               https://slopwash.com/api/mcp
@@ -291,9 +293,8 @@ export default function Home() {
             Agent instructions (always-on mode)
           </h2>
           <p className="text-sm text-zinc-500 mb-4">
-            Instead of calling a tool each time, you can bake the slopwash rules
-            directly into your agent so it <em>always</em> writes clean. Copy
-            the prompt above and paste it into the appropriate file for your editor.
+            Bake the slopwash rules directly into your agent so every response
+            follows them. Copy the prompt and paste it into the file for your editor.
           </p>
 
           <div className="space-y-4">
@@ -304,10 +305,10 @@ export default function Home() {
               </summary>
               <div className="px-4 pb-4 space-y-2">
                 <p className="text-xs text-zinc-500">
-                  Create <span className="text-zinc-400">.github/copilot-instructions.md</span> in your repo and paste the prompt there. Copilot will follow it for all chats in that project.
+                  Create <span className="text-zinc-400">.github/copilot-instructions.md</span> in your repo and paste the prompt. Copilot follows it for all chats in that project.
                 </p>
                 <p className="text-xs text-zinc-500">
-                  For a dedicated slopwash agent mode, create <span className="text-zinc-400">.github/agents/slopwash.md</span> with the prompt. Then invoke it with <span className="text-zinc-400">@slopwash</span> in chat.
+                  Or create <span className="text-zinc-400">.github/agents/slopwash.md</span> with the prompt and invoke it with <span className="text-zinc-400">@slopwash</span> in chat.
                 </p>
               </div>
             </details>
@@ -319,7 +320,7 @@ export default function Home() {
               </summary>
               <div className="px-4 pb-4 space-y-2">
                 <p className="text-xs text-zinc-500">
-                  Create <span className="text-zinc-400">.cursorrules</span> in your project root and paste the prompt. Cursor will apply it to all AI interactions in that project.
+                  Create <span className="text-zinc-400">.cursorrules</span> in your project root and paste the prompt. Cursor applies it to all AI interactions in that project.
                 </p>
               </div>
             </details>
@@ -331,7 +332,7 @@ export default function Home() {
               </summary>
               <div className="px-4 pb-4 space-y-2">
                 <p className="text-xs text-zinc-500">
-                  Create <span className="text-zinc-400">CLAUDE.md</span> in your repo root and paste the prompt. Claude Code reads this file automatically as project context.
+                  Create <span className="text-zinc-400">CLAUDE.md</span> in your repo root and paste the prompt. Claude Code reads it automatically.
                 </p>
               </div>
             </details>
@@ -343,7 +344,7 @@ export default function Home() {
               </summary>
               <div className="px-4 pb-4 space-y-2">
                 <p className="text-xs text-zinc-500">
-                  Create <span className="text-zinc-400">.windsurfrules</span> in your project root and paste the prompt. Windsurf will apply it on every interaction.
+                  Create <span className="text-zinc-400">.windsurfrules</span> in your project root and paste the prompt. Windsurf applies it on every interaction.
                 </p>
               </div>
             </details>
@@ -360,8 +361,7 @@ export default function Home() {
             Chat UI setup
           </h2>
           <p className="text-sm text-zinc-500 mb-4">
-            Not using an editor? You can use slopwash directly in any chat interface
-            by adding the prompt as a custom/system instruction.
+            Not using an editor? Add slopwash as a custom system instruction.
           </p>
 
           <div className="space-y-4">
@@ -374,10 +374,10 @@ export default function Home() {
                 <p className="text-xs text-zinc-500">
                   Go to <span className="text-zinc-400">Settings &rarr; Personalization &rarr; Custom instructions</span>.
                   Paste the slopwash prompt into the &quot;How would you like ChatGPT to respond?&quot; field.
-                  It will apply to all new conversations.
+                  It applies to all new conversations.
                 </p>
                 <p className="text-xs text-zinc-500">
-                  Or: just paste the prompt at the top of any conversation, followed by the text you want cleaned.
+                  Or paste it at the top of any single chat along with your text.
                 </p>
               </div>
             </details>
@@ -389,10 +389,10 @@ export default function Home() {
               </summary>
               <div className="px-4 pb-4 space-y-2">
                 <p className="text-xs text-zinc-500">
-                  Create a <span className="text-zinc-400">Project</span>, then paste the slopwash prompt into the project&apos;s custom instructions. All conversations in that project will apply the rules.
+                  Create a <span className="text-zinc-400">Project</span> with slopwash as the custom instructions. The rules apply to all conversations in that project.
                 </p>
                 <p className="text-xs text-zinc-500">
-                  Or: paste the prompt directly into a conversation before the text you want rewritten.
+                  Or paste the prompt directly into a conversation before your text.
                 </p>
               </div>
             </details>
@@ -404,10 +404,10 @@ export default function Home() {
               </summary>
               <div className="px-4 pb-4 space-y-2">
                 <p className="text-xs text-zinc-500">
-                  Create a <span className="text-zinc-400">Gem</span> (custom chatbot). Paste the slopwash prompt as the Gem&apos;s instructions. Then use that Gem whenever you need text cleaned up.
+                  Create a <span className="text-zinc-400">Gem</span> (custom chatbot) with slopwash as its instructions. Use that Gem whenever you need text cleaned.
                 </p>
                 <p className="text-xs text-zinc-500">
-                  Or: paste the prompt at the start of any Gemini conversation.
+                  Or paste the prompt at the start of any Gemini conversation.
                 </p>
               </div>
             </details>
@@ -420,7 +420,7 @@ export default function Home() {
             API usage
           </h2>
           <p className="text-sm text-zinc-500 mb-4">
-            Use slopwash as a system message when calling an LLM API directly.
+            When calling an LLM API directly, use slopwash as your system message.
           </p>
 
           <div className="space-y-4">
@@ -476,7 +476,7 @@ message = client.messages.create(
               </summary>
               <div className="px-4 pb-4 space-y-2">
                 <p className="text-xs text-zinc-500">
-                  Instead of hardcoding the prompt, fetch it live from the MCP endpoint:
+                  Fetch the prompt live from the MCP endpoint instead of hardcoding it. You get updates automatically.
                 </p>
                 <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`curl -X POST https://slopwash.com/api/mcp \
   -H "Content-Type: application/json" \
@@ -497,30 +497,30 @@ message = client.messages.create(
         </section>
 
         {/* Tips */}
-        <section id="tips" className="mt-12 scroll-mt-14">
+        <section id="things-to-know" className="mt-12 scroll-mt-14">
           <h2 className="text-sm font-semibold text-zinc-300 mb-3">
-            Tips
+            Things to know
           </h2>
           <ul className="text-sm text-zinc-500 space-y-2">
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
-              <span>Paste the slopwash prompt <em>before</em> your text, not after. It works best as a system prompt or preamble.</span>
+              <span>Paste the slopwash prompt before your text, not after. System prompts work best as a preamble.</span>
             </li>
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
-              <span>Personas are optional. The default prompt does the heavy lifting on its own.</span>
+              <span>Personas are optional. The base prompt handles most of the work on its own.</span>
             </li>
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
-              <span>Works with any LLM: GPT-4o, Claude, Gemini, Llama, Mistral, etc. The rules are model-agnostic.</span>
+              <span>The rules are model-agnostic. Any modern LLM can follow them.</span>
             </li>
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
-              <span>For best results, don&apos;t ask the LLM to do other tasks at the same time. Give it only the slopwash prompt + the text to clean.</span>
+              <span>For best results, don&apos;t layer on other tasks. Give the model the slopwash prompt and the text to clean.</span>
             </li>
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
-              <span>MCP tool vs. agent instructions: MCP is opt-in per task. Agent instructions bake the rules in so the agent always writes clean. Use MCP if you only sometimes need slopwash; use instructions if you want it everywhere.</span>
+              <span>MCP is opt-in per task when you need it. Agent instructions are always-on so every response follows the rules. Use MCP if slopwash is occasional, instructions if you want it everywhere.</span>
             </li>
           </ul>
         </section>
