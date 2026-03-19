@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+:root {
+  --accent: 168 80% 55%;
+  --accent-dim: 168 60% 30%;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: #09090b;
+  color: #e4e4e7;
+  font-feature-settings: "ss01", "ss02";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for the prompt block */
+.prompt-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.prompt-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.prompt-scroll::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+.prompt-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Selection color */
+::selection {
+  background: hsl(var(--accent) / 0.3);
+}
+
+/* Subtle glow on the prompt container */
+.prompt-glow {
+  box-shadow: 0 0 80px -20px hsl(var(--accent) / 0.08),
+              0 0 40px -10px hsl(var(--accent) / 0.05);
+}
