@@ -43,6 +43,7 @@ const MCP_CONFIGS = [
 export default function Home() {
   const [activePersonas, setActivePersonas] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const promptRef = useRef<HTMLPreElement>(null);
 
   const prompt = buildPrompt(Array.from(activePersonas));
@@ -184,13 +185,23 @@ export default function Home() {
           </div>
 
           {/* Scrollable prompt content */}
-          <div className="prompt-scroll overflow-auto max-h-[28vh]">
+          <div className={`prompt-scroll overflow-auto ${expanded ? '' : 'max-h-[28vh]'}`}>
             <pre
               ref={promptRef}
               className="p-4 sm:p-6 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap font-mono selection:bg-teal-500/20"
             >
               {prompt}
             </pre>
+          </div>
+
+          {/* Expand/collapse toggle */}
+          <div className="flex justify-center border-t border-zinc-800">
+            <button
+              onClick={() => setExpanded((e) => !e)}
+              className="w-full py-2 text-xs text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+            >
+              {expanded ? 'Collapse' : 'Expand full prompt'}
+            </button>
           </div>
         </section>
 
