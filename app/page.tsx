@@ -5,12 +5,60 @@ import Image from "next/image";
 import { personas } from "@/lib/personas";
 import { buildPrompt } from "@/lib/prompt";
 
+const MCP_CONFIGS = [
+  {
+    id: "vscode",
+    label: "VS Code",
+    file: ".vscode/mcp.json",
+    config: `{\n  "servers": {\n    "slopwash": {\n      "type": "http",\n      "url": "https://slopwash.com/api/mcp"\n    }\n  }\n}`,
+  },
+  {
+    id: "cursor",
+    label: "Cursor",
+    file: ".cursor/mcp.json",
+    config: `{\n  "mcpServers": {\n    "slopwash": {\n      "url": "https://slopwash.com/api/mcp"\n    }\n  }\n}`,
+  },
+  {
+    id: "claude-code",
+    label: "Claude Code",
+    file: ".mcp.json",
+    config: `{\n  "mcpServers": {\n    "slopwash": {\n      "type": "url",\n      "url": "https://slopwash.com/api/mcp"\n    }\n  }\n}`,
+    alt: "claude mcp add slopwash --transport http https://slopwash.com/api/mcp",
+  },
+  {
+    id: "windsurf",
+    label: "Windsurf",
+    file: "~/.codeium/windsurf/mcp_config.json",
+    config: `{\n  "mcpServers": {\n    "slopwash": {\n      "serverUrl": "https://slopwash.com/api/mcp"\n    }\n  }\n}`,
+  },
+  {
+    id: "claude-desktop",
+    label: "Claude Desktop",
+    file: "claude_desktop_config.json",
+    note: "Settings \u2192 Developer \u2192 Edit Config",
+    config: `{\n  "mcpServers": {\n    "slopwash": {\n      "type": "url",\n      "url": "https://slopwash.com/api/mcp"\n    }\n  }\n}`,
+  },
+];
+
 export default function Home() {
   const [activePersonas, setActivePersonas] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
   const promptRef = useRef<HTMLPreElement>(null);
 
   const prompt = buildPrompt(Array.from(activePersonas));
+  const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
+  const [selectedEditor, setSelectedEditor] = useState<string | null>(null);
+  const selectedConfig = selectedEditor
+    ? MCP_CONFIGS.find((c) => c.id === selectedEditor)
+    : null;
+
+  const copyConfig = useCallback(async (id: string, config: string) => {
+    try {
+      await navigator.clipboard.writeText(config);
+      setCopiedSnippet(id);
+      setSelectedEditor(id);
+    } catch {}
+  }, []);
 
   const togglePersona = useCallback((id: string) => {
     setActivePersonas((prev) => {
@@ -47,27 +95,30 @@ export default function Home() {
     }
   }, [copied]);
 
+  useEffect(() => {
+    if (copiedSnippet) {
+      const t = setTimeout(() => setCopiedSnippet(null), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [copiedSnippet]);
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Navbar */}
-      <nav className="sticky top-0 z-50 w-full bg-[#09090b]/80 backdrop-blur-md">
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-6 px-4 sm:px-6 h-10 text-xs">
-            <a href="#how-to-use" className="nav-link-haze whitespace-nowrap">How to use</a>
-            <a href="#mcp-quick-start" className="nav-link-haze whitespace-nowrap">MCP</a>
-            <a href="#agent-instructions" className="nav-link-haze whitespace-nowrap">Agent rules</a>
-            <a href="#chat-ui" className="nav-link-haze whitespace-nowrap">Chat UI</a>
-            <a href="#api-usage" className="nav-link-haze whitespace-nowrap">API</a>
-            <a href="#tips" className="nav-link-haze whitespace-nowrap">Tips</a>
-        </div>
-      </nav>
-
       {/* Header */}
-      <header className="pt-10 pb-6 px-6 text-center flex flex-col items-center">
-        <Image src="/slopwash-md.png" alt="slopwash" width={400} height={96} className="h-20 sm:h-24 w-auto" priority />
+      <header className="pt-12 pb-6 px-6 text-center flex flex-col items-center">
+        <Image src="/slopwash-md.png" alt="slopwash" width={480} height={112} className="h-24 sm:h-32 w-auto" priority />
         <p className="mt-3 text-zinc-400 text-sm max-w-lg mx-auto">
           A prompt that scrubs AI tells from any text. Copy it, paste it into
           your LLM, and get output that reads like a human wrote it.
         </p>
+        <div className="mt-4 flex items-center justify-center gap-5 text-xs">
+          <a href="#how-to-use" className="nav-link-haze">How to use</a>
+          <a href="#mcp-quick-start" className="nav-link-haze">MCP</a>
+          <a href="#agent-instructions" className="nav-link-haze">Agent rules</a>
+          <a href="#chat-ui" className="nav-link-haze">Chat UI</a>
+          <a href="#api-usage" className="nav-link-haze">API</a>
+          <a href="#tips" className="nav-link-haze">Tips</a>
+        </div>
       </header>
 
       {/* Main */}
@@ -132,7 +183,7 @@ export default function Home() {
           </div>
 
           {/* Scrollable prompt content */}
-          <div className="prompt-scroll overflow-auto max-h-[40vh]">
+          <div className="prompt-scroll overflow-auto max-h-[28vh]">
             <pre
               ref={promptRef}
               className="p-4 sm:p-6 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap font-mono selection:bg-teal-500/20"
@@ -149,7 +200,7 @@ export default function Home() {
               How to use
             </h2>
             <ol className="text-sm text-zinc-500 space-y-1.5 list-decimal list-inside">
-              <li>Pick a persona (or leave it on Default)</li>
+              <li>Pick one or more personas (optional)</li>
               <li>Copy the prompt</li>
               <li>
                 Paste it as a system prompt or before your text in any LLM
@@ -171,177 +222,63 @@ export default function Home() {
             <p className="text-xs text-zinc-600 mt-2">
               Tool: <span className="text-zinc-400">get_slopwash_prompt</span>{" "}
               &middot; Optional param:{" "}
-              <span className="text-zinc-400">persona</span>
+              <span className="text-zinc-400">personas</span>
             </p>
           </div>
         </section>
 
         {/* MCP Quick Start */}
         <section id="mcp-quick-start" className="mt-12 scroll-mt-14">
-          <h2 className="text-sm font-semibold text-zinc-300 mb-4">
+          <h2 className="text-sm font-semibold text-zinc-300 mb-2">
             MCP quick start
           </h2>
           <p className="text-sm text-zinc-500 mb-4">
-            Add slopwash to your editor so your AI agent can use it as a tool.
-            Pick your setup and paste the config.
+            Click your editor to copy the config. Paste it into the file shown.
           </p>
 
-          <div className="space-y-4">
-            {/* VS Code / GitHub Copilot */}
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>VS Code (GitHub Copilot)</span>
-                <svg
-                  className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Add to <span className="text-zinc-400">.vscode/mcp.json</span> in your project (or your user settings):
-                </p>
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`{
-  "servers": {
-    "slopwash": {
-      "type": "http",
-      "url": "https://slopwash.com/api/mcp"
-    }
-  }
-}`}</pre>
-              </div>
-            </details>
-
-            {/* Cursor */}
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Cursor</span>
-                <svg
-                  className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Add to <span className="text-zinc-400">.cursor/mcp.json</span> in your project root:
-                </p>
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`{
-  "mcpServers": {
-    "slopwash": {
-      "url": "https://slopwash.com/api/mcp"
-    }
-  }
-}`}</pre>
-              </div>
-            </details>
-
-            {/* Claude Code */}
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Claude Code</span>
-                <svg
-                  className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Run this in your terminal:
-                </p>
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`claude mcp add slopwash \\
-  --transport http \\
-  https://slopwash.com/api/mcp`}</pre>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Or add to <span className="text-zinc-400">.mcp.json</span> in your project:
-                </p>
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`{
-  "mcpServers": {
-    "slopwash": {
-      "type": "url",
-      "url": "https://slopwash.com/api/mcp"
-    }
-  }
-}`}</pre>
-              </div>
-            </details>
-
-            {/* Windsurf */}
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Windsurf</span>
-                <svg
-                  className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Add to <span className="text-zinc-400">~/.codeium/windsurf/mcp_config.json</span>:
-                </p>
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`{
-  "mcpServers": {
-    "slopwash": {
-      "serverUrl": "https://slopwash.com/api/mcp"
-    }
-  }
-}`}</pre>
-              </div>
-            </details>
-
-            {/* Claude Desktop */}
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Claude Desktop</span>
-                <svg
-                  className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Add to <span className="text-zinc-400">claude_desktop_config.json</span> (Settings &rarr; Developer &rarr; Edit Config):
-                </p>
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`{
-  "mcpServers": {
-    "slopwash": {
-      "type": "url",
-      "url": "https://slopwash.com/api/mcp"
-    }
-  }
-}`}</pre>
-              </div>
-            </details>
+          <div className="flex flex-wrap gap-2">
+            {MCP_CONFIGS.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => copyConfig(c.id, c.config)}
+                className={`
+                  px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200
+                  border cursor-pointer
+                  ${selectedEditor === c.id
+                    ? "bg-teal-500/15 border-teal-500/40 text-teal-300 shadow-[0_0_12px_-3px_rgba(45,212,191,0.25)]"
+                    : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300"
+                  }
+                `}
+              >
+                {copiedSnippet === c.id ? `${c.label} \u2713` : c.label}
+              </button>
+            ))}
           </div>
+
+          {selectedConfig && (
+            <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950 p-4">
+              <p className="text-xs text-zinc-500 mb-3">
+                Paste into{" "}
+                <span className="text-zinc-300 font-mono">{selectedConfig.file}</span>
+                {selectedConfig.note && (
+                  <span className="text-zinc-600"> &mdash; {selectedConfig.note}</span>
+                )}
+              </p>
+              <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{selectedConfig.config}</pre>
+              {selectedConfig.alt && (
+                <>
+                  <p className="text-xs text-zinc-500 mt-3 mb-1">Or run in terminal:</p>
+                  <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{selectedConfig.alt}</pre>
+                </>
+              )}
+            </div>
+          )}
 
           <p className="text-xs text-zinc-600 mt-4">
             Once connected, your agent gets a{" "}
             <span className="text-zinc-400">get_slopwash_prompt</span> tool.
-            Call it (optionally with a{" "}
-            <span className="text-zinc-400">persona</span> like{" "}
+            Call it (optionally with{" "}
+            <span className="text-zinc-400">personas</span> like{" "}
             <span className="text-teal-500/80">&quot;journalist&quot;</span> or{" "}
             <span className="text-teal-500/80">&quot;humorist&quot;</span>) and
             use the returned prompt as a system prompt when rewriting text.
