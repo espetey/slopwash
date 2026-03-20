@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     title: "slopwash — scrub AI from your writing",
     description:
         "A prompt that removes AI-generated writing patterns from any text. Copy it, paste it into your LLM, and get human-sounding output. Also available as an MCP server.",
+    authors: [{ name: "Slopwash.com" }],
     icons: {
         icon: [
             { url: "/slopwash-icon.png", type: "image/png" },
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
     },
     openGraph: {
         title: "slopwash",
-        description: "Scrub AI tells from your writing. Copy the prompt or use the MCP endpoint.",
+        description: "A free prompt that scrubs AI tells from any text. Copy it, paste it into your LLM, and get output that reads like a human wrote it.",
         type: "website",
         url: "https://slopwash.com",
         images: [{ url: "/slopwash-dark-sm.png" }],
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
     twitter: {
         card: "summary_large_image",
         title: "slopwash",
-        description: "Scrub AI tells from your writing.",
+        description: "A free prompt that scrubs AI tells from any text. Copy it, paste it into your LLM, and get output that reads like a human wrote it.",
         images: ["/slopwash-dark-sm.png"],
     },
 };
