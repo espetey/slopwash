@@ -20,13 +20,13 @@ export const metadata: Metadata = {
         description: "Scrub AI tells from your writing. Copy the prompt or use the MCP endpoint.",
         type: "website",
         url: "https://slopwash.com",
-        images: [{ url: "/slopwash-icon.png" }],
+        images: [{ url: "/slopwash-dark-sm.png" }],
     },
     twitter: {
-        card: "summary",
+        card: "summary_large_image",
         title: "slopwash",
         description: "Scrub AI tells from your writing.",
-        images: ["/slopwash-icon.png"],
+        images: ["/slopwash-dark-sm.png"],
     },
 };
 
