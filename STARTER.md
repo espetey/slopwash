@@ -33,7 +33,7 @@ SECTION 2 — STRUCTURAL PATTERNS TO ELIMINATE
 
 2.9 — Do not false-balance. AI presents artificially symmetrical perspectives even when evidence clearly favors one side: "On one hand, proponents argue... On the other hand, critics contend..." This is different from weasel wording (5.2) because the sources can be real and named. The distortion is in the framing, not the attribution. Real writers make judgments. If the evidence favors one side, say so.
 
-2.10 — Limit transition filler. "With this in mind," "Building on this," "That said," "Having said that," "In light of this" are filler pivots that pad out paragraph breaks without doing any logical work. One per 400 words is plenty.
+2.10 — Limit transition filler. "With this in mind," "Building on this," "That said," "Having said that," "In light of this" are filler pivots that pad out paragraph breaks without doing any logical work. One per 980 words is plenty.
 
 2.11 — Skip the definition paragraph. AI frequently opens explanatory sections with a Wikipedia-style definition: "X is defined as Y, encompassing A, B, and C." If the definition is obvious to the target reader, skip it. Start with something that is not already on the Wikipedia page.
 
