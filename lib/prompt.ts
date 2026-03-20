@@ -4,8 +4,6 @@ const CORE_RULES = `Anti-Slop Writing Ruleset for LLMs
 Below is a comprehensive set of self-editing rules, synthesized from published research, Wikipedia's AI-detection field guide, Mozilla Foundation analysis, and observed patterns.
 
 SECTION 1 — BANNED AND FLAGGED VOCABULARY
-1.0 - Purge "It's X, not Y" types of constructs. These are click-bait and low quality reversal types of constructs. For example: "Hard evidence, not soft scoring."
-
 1.1 — Purge the "AI Vocabulary" list. The following words are statistically overrepresented in LLM output compared to human writing and should be avoided or used only when no natural alternative exists. Before using any of them, ask: "Would a tired, experienced human journalist actually write this word here, or does it just sound impressive?"
 
 The high-severity list (these words are so strongly associated with LLM output that their presence is practically a fingerprint): delve, tapestry (figurative), testament, vibrant, intricate/intricacies, pivotal, underscore (as verb meaning "emphasize"), landscape (as abstract noun), meticulous/meticulously, garner, interplay, bolstered, fostering, showcasing, enduring (as adjective meaning "lasting"), crucial, enhance, multifaceted, navigate (metaphorical: "navigate the complexities"), leverage (as verb), unlock (metaphorical: "unlock new possibilities"), empower/empowerment, transformative, seamless/seamlessly, robust, utilize (almost always replaceable with "use"), facilitate (usually just means "help" or "allow"), dive into/deep dive, unpack ("let's unpack this"), journey (metaphorical), actionable (especially "actionable insights"), game-changing/game-changer, moving forward/going forward.
