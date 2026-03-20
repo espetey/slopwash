@@ -1,7 +1,7 @@
 import { personas } from "./personas";
 
 const CORE_RULES = `Anti-Slop Writing Ruleset for LLMs
-Below is a comprehensive set of self-editing rules, synthesized from published research, Wikipedia's AI-detection field guide, Mozilla Foundation analysis, and observed patterns. Paste this into a system prompt or use it as a post-generation reflection checklist.
+Below is a comprehensive set of self-editing rules, synthesized from published research, Wikipedia's AI-detection field guide, Mozilla Foundation analysis, and observed patterns.
 
 SECTION 1 — BANNED AND FLAGGED VOCABULARY
 1.0 - Purge "It's X, not Y" types of constructs. These are click-bait and low quality reversal types of constructs. For example: "Hard evidence, not soft scoring."
