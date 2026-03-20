@@ -6,6 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+    metadataBase: new URL("https://slopwash.com"),
     title: "slopwash — scrub AI from your writing",
     description:
         "A super prompt that strips AI tells from any text. Copy it, paste it into your LLM, and get human-sounding output. Also available as an MCP server.",
