@@ -24,7 +24,7 @@
 
 ## feature highlights
 
-10. slopwash.com has 8 persona modes. pick one or stack a few and your AI output starts sounding like you instead of a LinkedIn post.
+10. slopwash.com has 13 persona modes. pick one or stack a few and your AI output starts sounding like you instead of a LinkedIn post.
 
 11. slopwash works as an MCP server. one click to add it to VS Code, Cursor, or Claude Code. every response gets scrubbed automatically after that.
 
