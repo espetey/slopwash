@@ -28,7 +28,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "slopwash",
         description: "A free prompt that scrubs AI tells from any text. Copy it, paste it into your LLM, and get output that reads like a human wrote it.",
-        images: ["/slopwash-dark-sm.png"],
+        images: ["/slopwash-dark-md.png"],
     },
 };
 
