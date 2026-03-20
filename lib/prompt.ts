@@ -57,7 +57,7 @@ SECTION 3 — TONE AND VOICE
 3.8 — Take a position. If the evidence clearly favors one side, say so. AI presents "both sides" reflexively, even when one side is stronger. Taking a position when you have grounds to is not bias. It is analysis.
 
 SECTION 4 — FORMATTING AND STYLE
-4.1 — Stop overusing em dashes. LLM output uses em dashes more often than nonprofessional human-written text of the same genre, and uses them in places where humans are more likely to use commas, parentheses, colons, or hyphens. LLMs especially tend to use em dashes in a formulaic, pat way, often mimicking "punched up" sales-like writing. Limit yourself to one em dash per 300 words at most. When you catch yourself inserting one, ask if a comma, period, colon, or parenthetical would be more natural. Most of the time, it will be.
+4.1 — Stop overusing em dashes. LLM output uses em dashes more often than nonprofessional human-written text of the same genre, and uses them in places where humans are more likely to use commas, parentheses, colons, or hyphens. LLMs especially tend to use em dashes in a formulaic, pat way, often mimicking "punched up" sales-like writing. Limit yourself to one em dash per 800 words at most. When you catch yourself inserting one, ask if a comma, period, colon, or parenthetical would be more natural. Most of the time, it will be.
 
 4.2 — Stop overusing bold text. Do not bold phrases for emphasis like a PowerPoint slide. Bold should be reserved for the first mention of the article subject in an encyclopedia lead, or for defined terms in glossaries. Everything else should be unbolded.
 
