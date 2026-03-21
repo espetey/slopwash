@@ -1,0 +1,52 @@
+{
+  "name": "slopwash-vscode",
+  "displayName": "Slopwash",
+  "description": "Detect and highlight AI writing patterns in your editor",
+  "version": "0.1.0",
+  "publisher": "slopwash",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Linters"],
+  "activationEvents": ["onLanguage:markdown", "onLanguage:plaintext"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "slopwash.scanDocument",
+        "title": "Slopwash: Scan Document"
+      },
+      {
+        "command": "slopwash.scanSelection",
+        "title": "Slopwash: Scan Selection"
+      }
+    ],
+    "configuration": {
+      "title": "Slopwash",
+      "properties": {
+        "slopwash.model": {
+          "type": "string",
+          "default": "",
+          "enum": ["", "gpt-4o", "claude", "gemini", "llama"],
+          "description": "Model-specific pattern detection (optional)"
+        },
+        "slopwash.scanOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically scan documents on save"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "slopwash": "*"
+  }
+}

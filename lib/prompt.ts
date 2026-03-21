@@ -1,4 +1,5 @@
 import { personas } from "./personas";
+import { getModelProfile } from "./analyzer/models";
 
 const CORE_RULES = `Anti-Slop Writing Ruleset for LLMs
 Below is a comprehensive set of self-editing rules, synthesized from published research, Wikipedia's AI-detection field guide, Mozilla Foundation analysis, and observed patterns.
@@ -124,12 +125,19 @@ const SUFFIX = `
 
 Now rewrite the following text, applying all rules above. Return only the rewritten text with no preamble, no explanation, and no meta-commentary.`;
 
-export function buildPrompt(personaIds?: string[]): string {
+export function buildPrompt(personaIds?: string[], modelId?: string): string {
   const activePersonas = (personaIds ?? [])
     .map((id) => personas.find((p) => p.id === id))
     .filter((p) => p?.instructions);
 
   let prompt = PREAMBLE + CORE_RULES;
+
+  if (modelId) {
+    const profile = getModelProfile(modelId);
+    if (profile?.promptOverlay) {
+      prompt += `\n\n---\n\n${profile.promptOverlay}`;
+    }
+  }
 
   if (activePersonas.length > 0) {
     const overlays = activePersonas.map((p) => p!.instructions).join("\n\n");

@@ -120,6 +120,8 @@ export default function Home() {
           <a href="#chat-ui" className="nav-link-haze">Chat UI</a>
           <a href="#api-usage" className="nav-link-haze">API</a>
           <a href="#things-to-know" className="nav-link-haze">Tips</a>
+          <a href="/scanner" className="nav-link-haze">Scanner</a>
+          <a href="/benchmark" className="nav-link-haze">Benchmark</a>
         </div>
       </header>
 

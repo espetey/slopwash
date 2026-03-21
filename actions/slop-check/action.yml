@@ -1,0 +1,35 @@
+name: "Slopwash Slop Check"
+description: "Check PR text content for AI writing patterns using the slopwash analyzer"
+branding:
+  icon: "edit-3"
+  color: "green"
+
+inputs:
+  paths:
+    description: "Glob pattern for files to scan (default: '**/*.md')"
+    required: false
+    default: "**/*.md"
+  model:
+    description: "Model-specific detection (gpt-4o, claude, gemini, llama)"
+    required: false
+    default: ""
+  threshold:
+    description: "Minimum score to pass (0-100, default: 60)"
+    required: false
+    default: "60"
+  fail-on-violations:
+    description: "Fail the check if score is below threshold"
+    required: false
+    default: "true"
+
+outputs:
+  score:
+    description: "Overall slopwash score (0-100)"
+  violations:
+    description: "Total number of violations found"
+  report:
+    description: "Full analysis report as text"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"
