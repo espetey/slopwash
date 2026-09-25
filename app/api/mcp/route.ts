@@ -2,7 +2,12 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
 import { personaIds } from "@/lib/personas";
-import { buildPrompt, buildRewriteRequest } from "@/lib/prompt";
+import {
+  buildPrompt,
+  buildRewriteRequest,
+  promptModes,
+  type PromptMode,
+} from "@/lib/prompt";
 import { auditRewrite } from "@/lib/rewrite-audit";
 import { analyze } from "@/lib/analyzer";
 import { modelIds } from "@/lib/analyzer/models";
@@ -26,23 +31,52 @@ const narrativeSchema = z
   .optional()
   .describe("Load Section 9 for fiction, scenes, or narrative nonfiction");
 
+const modeSchema = z
+  .enum(promptModes as [PromptMode, ...PromptMode[]])
+  .optional()
+  .describe(
+    "rewrite (default): system prompt for text sent in <draft> tags. skill: on-demand editor for text or files the user names. rules: always-on writing rules for prose the agent writes itself"
+  );
+
+const readOnly = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: false,
+};
+
+function parsePersonaList(value?: string): string[] | undefined {
+  const ids = (value ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter((id) => personaIds.includes(id));
+  return ids.length > 0 ? ids : undefined;
+}
+
 function createServer() {
   const server = new McpServer({
     name: "slopwash",
-    version: "1.0.0",
+    version: "1.1.0",
   });
 
-  server.tool(
+  server.registerTool(
     "get_slopwash_prompt",
-    "Get the slopwash prompt that scrubs AI tells from writing. Optionally add persona, model, or narrative rules. Put source text in <draft> tags before sending it as the user message.",
     {
-      personas: personaSchema,
-      model: modelSchema,
-      narrative: narrativeSchema,
+      title: "Get slopwash prompt",
+      description:
+        "Get the slopwash prompt that scrubs AI tells from writing. mode=rewrite (default) returns a system prompt; put source text in <draft> tags in the user message. mode=skill returns an on-demand editing prompt. mode=rules returns always-on writing rules for the agent's own prose. Optionally add persona, model, or narrative rules.",
+      inputSchema: {
+        mode: modeSchema,
+        personas: personaSchema,
+        model: modelSchema,
+        narrative: narrativeSchema,
+      },
+      annotations: readOnly,
     },
-    async ({ personas, model, narrative }) => {
+    async ({ mode, personas, model, narrative }) => {
       const prompt = buildPrompt(personas, model, {
         includeNarrative: narrative,
+        mode,
       });
       return {
         content: [{ type: "text" as const, text: prompt }],
@@ -50,14 +84,19 @@ function createServer() {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "prepare_rewrite",
-    "Build a slopwash system prompt and a user message with the source safely wrapped in <draft> tags. Use the returned fields as separate messages in an LLM request.",
     {
-      text: z.string().describe("The source text to rewrite"),
-      personas: personaSchema,
-      model: modelSchema,
-      narrative: narrativeSchema,
+      title: "Prepare rewrite request",
+      description:
+        "Build a slopwash system prompt and a user message with the source safely wrapped in <draft> tags. Use the returned fields as separate messages in an LLM request.",
+      inputSchema: {
+        text: z.string().describe("The source text to rewrite"),
+        personas: personaSchema,
+        model: modelSchema,
+        narrative: narrativeSchema,
+      },
+      annotations: readOnly,
     },
     async ({ text, personas, model, narrative }) => {
       const request = buildRewriteRequest(text, personas, model, {
@@ -74,14 +113,19 @@ function createServer() {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "audit_rewrite",
-    "Compare an LLM rewrite with its source. Flags invented numbers, added length or punctuation, and slop patterns. If it fails, send retryMessage to the same model for one correction pass, then audit the result again.",
     {
-      original: z.string().describe("The original source text"),
-      rewritten: z.string().describe("The model's rewritten text"),
-      model: modelSchema,
-      narrative: narrativeSchema,
+      title: "Audit rewrite",
+      description:
+        "Compare an LLM rewrite with its source. Flags invented numbers, added length or punctuation, and slop patterns. If it fails, send retryMessage to the same model for one correction pass, then audit the result again.",
+      inputSchema: {
+        original: z.string().describe("The original source text"),
+        rewritten: z.string().describe("The model's rewritten text"),
+        model: modelSchema,
+        narrative: narrativeSchema,
+      },
+      annotations: readOnly,
     },
     async ({ original, rewritten, model, narrative }) => {
       const result = auditRewrite(original, rewritten, { model, narrative });
@@ -96,15 +140,20 @@ function createServer() {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "analyze_text",
-    "Analyze text for AI writing patterns (slop) without rewriting it. Returns a score (0-100, higher is better), section-by-section breakdown, and a list of specific violations found. No LLM is called. Enable narrative for stories, scenes, or narrative nonfiction.",
     {
-      text: z
-        .string()
-        .describe("The text to analyze for AI writing patterns"),
-      model: modelSchema,
-      narrative: narrativeSchema,
+      title: "Analyze text",
+      description:
+        "Analyze text for AI writing patterns (slop) without rewriting it. Returns a score (0-100, higher is better), section-by-section breakdown, and a list of specific violations found. No LLM is called. Enable narrative for stories, scenes, or narrative nonfiction.",
+      inputSchema: {
+        text: z
+          .string()
+          .describe("The text to analyze for AI writing patterns"),
+        model: modelSchema,
+        narrative: narrativeSchema,
+      },
+      annotations: readOnly,
     },
     async ({ text, model, narrative }) => {
       const result = analyze(text, { model, narrative });
@@ -141,14 +190,69 @@ function createServer() {
     }
   );
 
+  server.registerPrompt(
+    "rewrite",
+    {
+      title: "slopwash: rewrite text",
+      description:
+        "Rewrite pasted text with the slopwash rules. The model returns only the rewritten text.",
+      argsSchema: {
+        text: z.string().describe("The text to rewrite"),
+        personas: z
+          .string()
+          .optional()
+          .describe("Optional comma-separated persona IDs, such as journalist,technologist"),
+      },
+    },
+    ({ text, personas }) => {
+      const request = buildRewriteRequest(text, parsePersonaList(personas));
+      return {
+        messages: [
+          {
+            role: "user" as const,
+            content: {
+              type: "text" as const,
+              text: `${request.systemPrompt}\n\n${request.userMessage}`,
+            },
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerPrompt(
+    "writing_rules",
+    {
+      title: "slopwash: writing rules",
+      description:
+        "Load the slopwash writing rules for the rest of this conversation, so the agent's own prose follows them.",
+    },
+    () => ({
+      messages: [
+        {
+          role: "user" as const,
+          content: {
+            type: "text" as const,
+            text: `${buildPrompt(undefined, undefined, { mode: "rules" })}\n\nFollow these rules for the rest of this conversation. Reply with one short sentence confirming, then wait for my next request.`,
+          },
+        },
+      ],
+    })
+  );
+
   return server;
+}
+
+function createTransport() {
+  return new WebStandardStreamableHTTPServerTransport({
+    sessionIdGenerator: undefined, // stateless
+    enableJsonResponse: true,
+  });
 }
 
 export async function POST(req: Request) {
   const server = createServer();
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined, // stateless
-  });
+  const transport = createTransport();
 
   await server.connect(transport);
   const response = await transport.handleRequest(req);
@@ -157,9 +261,7 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   const server = createServer();
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  });
+  const transport = createTransport();
 
   await server.connect(transport);
   const response = await transport.handleRequest(req);
@@ -168,9 +270,7 @@ export async function GET(req: Request) {
 
 export async function DELETE(req: Request) {
   const server = createServer();
-  const transport = new WebStandardStreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  });
+  const transport = createTransport();
 
   await server.connect(transport);
   const response = await transport.handleRequest(req);

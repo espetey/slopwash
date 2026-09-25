@@ -1,55 +1,147 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, type ReactNode } from "react";
 import Image from "next/image";
 import { personas } from "@/lib/personas";
-import { buildPrompt } from "@/lib/prompt";
+import { buildPrompt, SKILL_FRONTMATTER, type PromptMode } from "@/lib/prompt";
 
-const MCP_CONFIGS = [
+const MCP_URL = "https://slopwash.com/api/mcp";
+
+const json = (value: unknown) => JSON.stringify(value, null, 2);
+
+interface McpConfig {
+  id: string;
+  label: string;
+  file?: string;
+  note?: string;
+  config?: string;
+  steps?: string;
+  alt?: string;
+  altNote?: string;
+}
+
+const MCP_CONFIGS: McpConfig[] = [
   {
     id: "vscode",
     label: "VS Code",
     file: ".vscode/mcp.json",
-    config: `{\n  "servers": {\n    "slopwash": {\n      "type": "http",\n      "url": "https://slopwash.com/api/mcp"\n    }\n  }\n}`,
+    note: "or run MCP: Open User Configuration to add it to every workspace",
+    config: json({ servers: { slopwash: { type: "http", url: MCP_URL } } }),
+    alt: `code --add-mcp '{"name":"slopwash","type":"http","url":"${MCP_URL}"}'`,
   },
   {
     id: "cursor",
     label: "Cursor",
     file: ".cursor/mcp.json",
-    config: `{\n  "mcpServers": {\n    "slopwash": {\n      "url": "https://slopwash.com/api/mcp"\n    }\n  }\n}`,
+    note: "or ~/.cursor/mcp.json for every project",
+    config: json({ mcpServers: { slopwash: { url: MCP_URL } } }),
   },
   {
     id: "claude-code",
     label: "Claude Code",
     file: ".mcp.json",
-    config: `{\n  "mcpServers": {\n    "slopwash": {\n      "type": "url",\n      "url": "https://slopwash.com/api/mcp"\n    }\n  }\n}`,
-    alt: "claude mcp add slopwash --transport http https://slopwash.com/api/mcp",
+    config: json({ mcpServers: { slopwash: { type: "http", url: MCP_URL } } }),
+    alt: `claude mcp add --transport http slopwash ${MCP_URL}`,
+    altNote: "Add --scope user to use it in every project.",
+  },
+  {
+    id: "codex",
+    label: "Codex",
+    file: "~/.codex/config.toml",
+    note: "shared by the Codex CLI, IDE extension, and app",
+    config: `[mcp_servers.slopwash]\nurl = "${MCP_URL}"`,
+    alt: `codex mcp add slopwash --url ${MCP_URL}`,
+  },
+  {
+    id: "gemini-cli",
+    label: "Gemini CLI",
+    file: "~/.gemini/settings.json",
+    note: "httpUrl selects Streamable HTTP; url would mean SSE",
+    config: json({ mcpServers: { slopwash: { httpUrl: MCP_URL } } }),
+    alt: `gemini mcp add --transport http slopwash ${MCP_URL}`,
   },
   {
     id: "windsurf",
-    label: "Windsurf",
-    file: "~/.codeium/windsurf/mcp_config.json",
-    config: `{\n  "mcpServers": {\n    "slopwash": {\n      "serverUrl": "https://slopwash.com/api/mcp"\n    }\n  }\n}`,
+    label: "Windsurf / Devin",
+    file: "~/.config/devin/mcp_config.json",
+    note: "or .devin/mcp_config.json in a project; older Windsurf builds use ~/.codeium/windsurf/mcp_config.json",
+    config: json({ mcpServers: { slopwash: { url: MCP_URL } } }),
+    alt: `devin mcp add -s user slopwash ${MCP_URL}`,
   },
   {
-    id: "claude-desktop",
-    label: "Claude Desktop",
-    file: "claude_desktop_config.json",
-    note: "Settings \u2192 Developer \u2192 Edit Config",
-    config: `{\n  "mcpServers": {\n    "slopwash": {\n      "type": "url",\n      "url": "https://slopwash.com/api/mcp"\n    }\n  }\n}`,
+    id: "zed",
+    label: "Zed",
+    file: "settings.json",
+    note: "or Settings \u2192 AI \u2192 MCP Servers \u2192 Add Remote Server",
+    config: json({ context_servers: { slopwash: { url: MCP_URL } } }),
+  },
+  {
+    id: "cline",
+    label: "Cline",
+    file: "cline_mcp_settings.json",
+    note: "MCP Servers \u2192 Configure; without type, Cline falls back to SSE",
+    config: json({
+      mcpServers: { slopwash: { type: "streamableHttp", url: MCP_URL } },
+    }),
+  },
+  {
+    id: "claude",
+    label: "Claude app",
+    steps:
+      "In Claude on the web or desktop, go to Customize \u2192 Connectors \u2192 + \u2192 Add custom connector and paste the URL. On Team and Enterprise plans, an Owner adds it first under Organization settings \u2192 Connectors. Free plans allow one custom connector.",
+  },
+  {
+    id: "chatgpt",
+    label: "ChatGPT",
+    steps:
+      "On chatgpt.com, turn on Settings \u2192 Security and login \u2192 Developer mode, then add the server at chatgpt.com/plugins with + and No Authentication. Developer mode is web-only and limited to paid plans; some plans allow only read-only tools, which is all slopwash has.",
+  },
+];
+
+const PROMPT_FORMATS: {
+  id: PromptMode;
+  label: string;
+  filename: string;
+  description: string;
+}[] = [
+  {
+    id: "rewrite",
+    label: "Rewrite prompt",
+    filename: "slopwash-prompt.md",
+    description:
+      "System prompt for chat apps and APIs. Send the text to clean inside <draft> tags.",
+  },
+  {
+    id: "skill",
+    label: "Agent skill",
+    filename: "SKILL.md",
+    description:
+      "An on-demand skill for coding agents and Claude. Invoke it with /slopwash on pasted text or a file.",
+  },
+  {
+    id: "rules",
+    label: "Writing rules",
+    filename: "slopwash-rules.md",
+    description:
+      "Always-on rules for the prose an agent writes itself: docs, comments, commit messages, and replies.",
   },
 ];
 
 export default function Home() {
   const [activePersonas, setActivePersonas] = useState<Set<string>>(new Set());
   const [includeNarrative, setIncludeNarrative] = useState(false);
+  const [mode, setMode] = useState<PromptMode>("rewrite");
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const promptRef = useRef<HTMLPreElement>(null);
 
-  const prompt = buildPrompt(Array.from(activePersonas), undefined, {
+  const format = PROMPT_FORMATS.find((f) => f.id === mode) ?? PROMPT_FORMATS[0];
+  const promptBody = buildPrompt(Array.from(activePersonas), undefined, {
     includeNarrative,
+    mode,
   });
+  const prompt =
+    mode === "skill" ? `${SKILL_FRONTMATTER}\n\n${promptBody}` : promptBody;
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
   const [selectedEditor, setSelectedEditor] = useState<string | null>(null);
   const selectedConfig = selectedEditor
@@ -57,12 +149,23 @@ export default function Home() {
     : null;
 
   const copyConfig = useCallback(async (id: string, config: string) => {
+    setSelectedEditor(id);
     try {
       await navigator.clipboard.writeText(config);
       setCopiedSnippet(id);
-      setSelectedEditor(id);
     } catch {}
   }, []);
+
+  const handleDownload = useCallback(() => {
+    const url = URL.createObjectURL(
+      new Blob([prompt], { type: "text/markdown;charset=utf-8" })
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = format.filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [prompt, format.filename]);
 
   const togglePersona = useCallback((id: string) => {
     const enabling = !activePersonas.has(id);
@@ -126,8 +229,8 @@ export default function Home() {
         <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
           <a href="#how-to-use" className="nav-link-haze">How to use</a>
           <a href="#mcp-quick-start" className="nav-link-haze">MCP</a>
-          <a href="#agent-instructions" className="nav-link-haze">Agent rules</a>
-          <a href="#chat-ui" className="nav-link-haze">Chat UI</a>
+          <a href="#agent-instructions" className="nav-link-haze">Skills</a>
+          <a href="#chat-ui" className="nav-link-haze">Chat apps</a>
           <a href="#api-usage" className="nav-link-haze">API</a>
           <a href="#things-to-know" className="nav-link-haze">Tips</a>
           <a href="/scanner" className="nav-link-haze">Scanner</a>
@@ -137,6 +240,36 @@ export default function Home() {
 
       {/* Main */}
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 pb-20">
+        {/* Format selector */}
+        <section className="mb-6">
+          <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
+            Format
+          </p>
+          <div role="radiogroup" aria-label="Prompt format" className="flex flex-wrap gap-2">
+            {PROMPT_FORMATS.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                role="radio"
+                aria-checked={mode === f.id}
+                onClick={() => setMode(f.id)}
+                className={`
+                  px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200
+                  border cursor-pointer
+                  ${
+                    mode === f.id
+                      ? "bg-teal-500/15 border-teal-500/40 text-teal-300 shadow-[0_0_12px_-3px_rgba(45,212,191,0.25)]"
+                      : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300"
+                  }
+                `}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-zinc-600">{format.description}</p>
+        </section>
+
         {/* Persona selector */}
         <section className="mb-6">
           <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
@@ -196,8 +329,8 @@ export default function Home() {
         <section className="relative prompt-glow rounded-xl border border-zinc-800 bg-zinc-950">
           {/* Copy button bar */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-            <span className="text-xs text-zinc-500 font-mono">
-              slopwash prompt
+            <span className="min-w-0 truncate text-xs text-zinc-500 font-mono">
+              {format.filename}
               {activePersonas.size > 0 && (
                 <span className="text-teal-500/80">
                   {" "}
@@ -211,6 +344,14 @@ export default function Home() {
                   <span className="text-teal-500/80"> + narrative</span>
                 )}
             </span>
+            <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+            >
+              Download
+            </button>
             <button
               onClick={handleCopy}
               className={`
@@ -223,8 +364,9 @@ export default function Home() {
                 }
               `}
             >
-              {copied ? "Copied!" : "Copy prompt"}
+              {copied ? "Copied!" : "Copy"}
             </button>
+            </div>
           </div>
 
           {/* Scrollable prompt content */}
@@ -255,14 +397,13 @@ export default function Home() {
               Getting started
             </h2>
             <ol className="text-sm text-zinc-500 space-y-1.5 list-decimal list-inside">
-              <li>Pick one or more personas to layer in a specific voice (optional)</li>
-              <li>Turn on narrative rules only for stories and scenes</li>
-              <li>Copy the prompt</li>
-              <li>Paste it as a system instruction or at the top of any LLM chat</li>
-              <li>Send the text inside <span className="text-zinc-400 font-mono">&lt;draft&gt;...&lt;/draft&gt;</span> tags</li>
+              <li>Pick a format: the rewrite prompt for chat and APIs, a skill for agents, or always-on writing rules</li>
+              <li>Add personas for a specific voice, or narrative rules for stories and scenes (optional)</li>
+              <li>Copy or download it</li>
+              <li>For the rewrite prompt, set it as the system instruction and send your text inside <span className="text-zinc-400 font-mono">&lt;draft&gt;...&lt;/draft&gt;</span> tags</li>
             </ol>
             <p className="text-xs text-zinc-600 mt-2">
-              Works with GPT-4o, Claude, Gemini, Llama, Mistral, and other models.
+              Works with any current model, including GPT, Claude, Gemini, Llama, and Mistral.
             </p>
           </div>
           <div id="mcp-server" className="scroll-mt-14">
@@ -270,16 +411,19 @@ export default function Home() {
               MCP server
             </h2>
             <p className="text-sm text-zinc-500 mb-2">
-              Connect through the MCP endpoint to let your AI agent fetch the
-              prompt programmatically instead of hardcoding it.
+              Connect an agent or chat app to the public MCP endpoint. It needs
+              no API key, and every tool is read-only.
             </p>
             <code className="block text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono break-all">
-              https://slopwash.com/api/mcp
+              {MCP_URL}
             </code>
             <p className="text-xs text-zinc-600 mt-2">
-              Tools: <span className="text-zinc-400">prepare_rewrite</span>,{" "}
+              Tools: <span className="text-zinc-400">get_slopwash_prompt</span>,{" "}
+              <span className="text-zinc-400">prepare_rewrite</span>,{" "}
               <span className="text-zinc-400">audit_rewrite</span>, and{" "}
-              <span className="text-zinc-400">analyze_text</span>
+              <span className="text-zinc-400">analyze_text</span>. Prompts:{" "}
+              <span className="text-zinc-400">rewrite</span> and{" "}
+              <span className="text-zinc-400">writing_rules</span>.
             </p>
           </div>
         </section>
@@ -290,14 +434,14 @@ export default function Home() {
             MCP quick start
           </h2>
           <p className="text-sm text-zinc-500 mb-4">
-            Click your editor to copy the config. Paste it into the file shown.
+            Pick your tool to copy its config, then paste it into the file shown.
           </p>
 
           <div className="flex flex-wrap gap-2">
             {MCP_CONFIGS.map((c) => (
               <button
                 key={c.id}
-                onClick={() => copyConfig(c.id, c.config)}
+                onClick={() => copyConfig(c.id, c.config ?? MCP_URL)}
                 className={`
                   px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200
                   border cursor-pointer
@@ -314,159 +458,194 @@ export default function Home() {
 
           {selectedConfig && (
             <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950 p-4">
-              <p className="text-xs text-zinc-500 mb-3">
-                Paste into{" "}
-                <span className="text-zinc-300 font-mono">{selectedConfig.file}</span>
-                {selectedConfig.note && (
-                  <span className="text-zinc-600"> &mdash; {selectedConfig.note}</span>
-                )}
-              </p>
-              <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{selectedConfig.config}</pre>
+              {selectedConfig.file ? (
+                <p className="text-xs text-zinc-500 mb-3">
+                  Paste into{" "}
+                  <span className="text-zinc-300 font-mono break-all">{selectedConfig.file}</span>
+                  {selectedConfig.note && (
+                    <span className="text-zinc-600"> ({selectedConfig.note})</span>
+                  )}
+                </p>
+              ) : (
+                <p className="text-xs text-zinc-500 mb-3">{selectedConfig.steps}</p>
+              )}
+              <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{selectedConfig.config ?? MCP_URL}</pre>
               {selectedConfig.alt && (
                 <>
-                  <p className="text-xs text-zinc-500 mt-3 mb-1">Or run in terminal:</p>
+                  <p className="text-xs text-zinc-500 mt-3 mb-1">Or run in a terminal:</p>
                   <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{selectedConfig.alt}</pre>
+                  {selectedConfig.altNote && (
+                    <p className="text-xs text-zinc-600 mt-1">{selectedConfig.altNote}</p>
+                  )}
                 </>
               )}
             </div>
           )}
 
           <p className="text-xs text-zinc-600 mt-4">
-            Once connected, call{" "}
-            <span className="text-zinc-400">prepare_rewrite</span> with the source text.
-            It returns separate system and draft-wrapped user messages. You can add{" "}
-            <span className="text-zinc-400">personas</span> like{" "}
-            <span className="text-teal-500/80">&quot;journalist&quot;</span> or{" "}
-            <span className="text-teal-500/80">&quot;humorist&quot;</span>. After the model
-            responds, call <span className="text-zinc-400">audit_rewrite</span> and
-            use its retry message once if the audit fails.
+            Once connected, ask the agent to slopwash some text or a file. It calls{" "}
+            <span className="text-zinc-400">prepare_rewrite</span> to get the prompt and the
+            draft-wrapped text, and{" "}
+            <span className="text-zinc-400">audit_rewrite</span> to check the result, using the
+            retry message once if the audit fails. Pass{" "}
+            <span className="text-zinc-400">personas</span> such as{" "}
+            <span className="text-teal-500/80">&quot;journalist&quot;</span> to{" "}
+            <span className="text-zinc-400">prepare_rewrite</span> for a specific voice. In clients that
+            support MCP prompts, <span className="text-zinc-400">rewrite</span> and{" "}
+            <span className="text-zinc-400">writing_rules</span> also show up as slash commands;
+            type <span className="font-mono">/</span> to find them (in Claude Code,{" "}
+            <span className="font-mono text-zinc-400">/mcp__slopwash__rewrite</span>).
           </p>
         </section>
 
         {/* Agent Instructions */}
         <section id="agent-instructions" className="mt-12 scroll-mt-14">
           <h2 className="text-sm font-semibold text-zinc-300 mb-2">
-            Agent instructions (always-on mode)
+            Agent skills and rules
           </h2>
           <p className="text-sm text-zinc-500 mb-4">
-            Bake the slopwash rules directly into your agent so every response
-            follows them. Copy the prompt and paste it into the file for your editor.
+            Coding agents can load slopwash two ways. A skill loads only when
+            you invoke it. Writing rules load on every request, adding about
+            8,000 tokens, and shape the prose the agent writes on its own. Pick
+            the matching format at the top of the page before you copy or
+            download.
           </p>
 
           <div className="space-y-4">
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>VS Code (GitHub Copilot)</span>
-                <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Create <span className="text-zinc-400">.github/copilot-instructions.md</span> in your repo and paste the prompt. Copilot follows it for all chats in that project.
-                </p>
-                <p className="text-xs text-zinc-500">
-                  Or create <span className="text-zinc-400">.github/agents/slopwash.md</span> with the prompt and invoke it with <span className="text-zinc-400">@slopwash</span> in chat.
-                </p>
-              </div>
-            </details>
+            <Disclosure title="Skill: Claude Code, VS Code, Cursor" open>
+              <p className="text-xs text-zinc-500">
+                Choose <Em>Agent skill</Em> and save the download as{" "}
+                <Path>.claude/skills/slopwash/SKILL.md</Path>. All three tools
+                read that folder. VS Code also reads <Path>.github/skills/</Path>,
+                and Cursor also reads <Path>.cursor/skills/</Path>.
+              </p>
+              <p className="text-xs text-zinc-500">
+                Type <Path>/slopwash</Path> followed by pasted text or a file
+                reference, or ask the agent to de-slop something and it will
+                load the skill on its own.
+              </p>
+            </Disclosure>
 
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Cursor</span>
-                <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Create <span className="text-zinc-400">.cursorrules</span> in your project root and paste the prompt. Cursor applies it to all AI interactions in that project.
-                </p>
-              </div>
-            </details>
+            <Disclosure title="VS Code (GitHub Copilot)">
+              <p className="text-xs text-zinc-500">
+                Writing rules in <Path>.github/copilot-instructions.md</Path>{" "}
+                apply to every chat in the repo. To apply them only to docs, save
+                them as <Path>.github/instructions/slopwash.instructions.md</Path>{" "}
+                with an <Path>applyTo</Path> pattern at the top:
+              </p>
+              <CodeBlock>{`---\napplyTo: "**/*.md"\n---`}</CodeBlock>
+              <p className="text-xs text-zinc-500">
+                For a dedicated editor, save the agent skill download as{" "}
+                <Path>.github/agents/slopwash.agent.md</Path> and pick slopwash
+                from the agent dropdown in Chat. Custom agents are chosen there,
+                not with <Path>@</Path>.
+              </p>
+            </Disclosure>
 
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Claude Code</span>
-                <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Create <span className="text-zinc-400">CLAUDE.md</span> in your repo root and paste the prompt. Claude Code reads it automatically.
-                </p>
-              </div>
-            </details>
+            <Disclosure title="Cursor">
+              <p className="text-xs text-zinc-500">
+                Save the writing rules as <Path>.cursor/rules/slopwash.mdc</Path>{" "}
+                with this at the top. The <Path>.mdc</Path> extension is
+                required, and <Path>.cursorrules</Path> is legacy.
+              </p>
+              <CodeBlock>{`---\ndescription: slopwash writing rules\nalwaysApply: true\n---`}</CodeBlock>
+              <p className="text-xs text-zinc-500">
+                To apply the rules only to docs, set <Path>alwaysApply: false</Path>{" "}
+                and add <Path>globs: **/*.md</Path>.
+              </p>
+            </Disclosure>
 
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Windsurf</span>
-                <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Create <span className="text-zinc-400">.windsurfrules</span> in your project root and paste the prompt. Windsurf applies it on every interaction.
-                </p>
-              </div>
-            </details>
+            <Disclosure title="Claude Code">
+              <p className="text-xs text-zinc-500">
+                <Path>CLAUDE.md</Path> loads into every session. Save the writing
+                rules as <Path>slopwash-rules.md</Path> and import them with one
+                line in <Path>CLAUDE.md</Path>, so your own instructions stay
+                readable:
+              </p>
+              <CodeBlock>@slopwash-rules.md</CodeBlock>
+            </Disclosure>
+
+            <Disclosure title="Codex, Cline, and other AGENTS.md tools">
+              <p className="text-xs text-zinc-500">
+                Codex, VS Code, Cursor, Devin, and Cline read{" "}
+                <Path>AGENTS.md</Path> at the repo root, so pasting the writing
+                rules there covers all of them. Claude Code reads it only when
+                there is no <Path>CLAUDE.md</Path>. Gemini CLI reads{" "}
+                <Path>GEMINI.md</Path> unless you add <Path>AGENTS.md</Path> to{" "}
+                <Path>context.fileName</Path> in its settings.
+              </p>
+            </Disclosure>
+
+            <Disclosure title="Windsurf / Devin">
+              <p className="text-xs text-zinc-500">
+                Rule files in <Path>.devin/rules/</Path> hold at most 12,000
+                characters. The prompt is about 31,000, so use the MCP server
+                instead. <Path>.windsurfrules</Path> still loads but is legacy.
+              </p>
+            </Disclosure>
           </div>
-
-          <p className="text-xs text-zinc-600 mt-4">
-            MCP tool = opt-in per task (agent calls it when needed). Agent instructions = always-on (agent follows the rules on every response). Pick whichever fits your workflow.
-          </p>
         </section>
 
         {/* Chat UI Setup */}
         <section id="chat-ui" className="mt-12 scroll-mt-14">
           <h2 className="text-sm font-semibold text-zinc-300 mb-2">
-            Chat UI setup
+            Chat app setup
           </h2>
           <p className="text-sm text-zinc-500 mb-4">
-            Not using an editor? Add slopwash as a custom system instruction.
+            The rewrite prompt is about 31,000 characters, more than most
+            settings fields hold. Put it in a project or Gem, or connect the MCP
+            server. Then send your text inside{" "}
+            <span className="font-mono">&lt;draft&gt;</span> tags.
           </p>
 
           <div className="space-y-4">
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>ChatGPT</span>
-                <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Go to <span className="text-zinc-400">Settings &rarr; Personalization &rarr; Custom instructions</span>.
-                  Paste the slopwash prompt into the &quot;How would you like ChatGPT to respond?&quot; field.
-                  It applies to all new conversations.
-                </p>
-                <p className="text-xs text-zinc-500">
-                  Or paste it at the top of any single chat along with your text.
-                </p>
-              </div>
-            </details>
+            <Disclosure title="ChatGPT">
+              <p className="text-xs text-zinc-500">
+                Custom instructions hold at most 5,000 characters (1,500 on Free
+                and Go), so the prompt won&apos;t fit there. Create a{" "}
+                <Em>project</Em> instead and paste the prompt into its
+                instructions, or upload the downloaded file and set the
+                instructions to &quot;Rewrite the text I send using
+                slopwash-prompt.md.&quot;
+              </p>
+              <p className="text-xs text-zinc-500">
+                On paid plans you can also connect the MCP server in developer
+                mode (see MCP quick start). OpenAI retires custom GPTs on
+                December 11, 2026, so don&apos;t build a new one.
+              </p>
+            </Disclosure>
 
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Claude.ai</span>
-                <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Create a <span className="text-zinc-400">Project</span> with slopwash as the custom instructions. The rules apply to all conversations in that project.
-                </p>
-                <p className="text-xs text-zinc-500">
-                  Or paste the prompt directly into a conversation before your text.
-                </p>
-              </div>
-            </details>
+            <Disclosure title="Claude">
+              <p className="text-xs text-zinc-500">
+                Create a <Em>Project</Em> and paste the prompt into its
+                instructions. The rules apply to every chat in that project.
+              </p>
+              <p className="text-xs text-zinc-500">
+                To use slopwash in any chat, upload it as a skill. Download the{" "}
+                <Em>Agent skill</Em> format, put <Path>SKILL.md</Path> in a folder
+                named <Path>slopwash</Path>, zip the folder, and upload it under{" "}
+                <Em>Customize &rarr; Skills &rarr; + &rarr; Create skill &rarr; Upload a skill</Em>.
+                Skills need code execution turned on.
+              </p>
+              <p className="text-xs text-zinc-500">
+                Or add the MCP server as a custom connector (see MCP quick start).
+              </p>
+            </Disclosure>
 
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Gemini</span>
-                <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Create a <span className="text-zinc-400">Gem</span> (custom chatbot) with slopwash as its instructions. Use that Gem whenever you need text cleaned.
-                </p>
-                <p className="text-xs text-zinc-500">
-                  Or paste the prompt at the start of any Gemini conversation.
-                </p>
-              </div>
-            </details>
+            <Disclosure title="Gemini">
+              <p className="text-xs text-zinc-500">
+                Go to <Em>Gems &rarr; New Gem</Em> and paste the prompt as its
+                instructions, or upload the downloaded file under Knowledge. Use
+                that Gem whenever you need text cleaned.
+              </p>
+            </Disclosure>
+
+            <Disclosure title="Any other chat">
+              <p className="text-xs text-zinc-500">
+                Paste the prompt at the start of a new conversation, followed by
+                your text in <span className="font-mono">&lt;draft&gt;</span> tags.
+              </p>
+            </Disclosure>
           </div>
         </section>
 
@@ -476,100 +655,124 @@ export default function Home() {
             API usage
           </h2>
           <p className="text-sm text-zinc-500 mb-4">
-            Use slopwash as the system message and wrap untrusted source text before sending it.
+            Send the rewrite prompt as the system instruction and the source
+            text in <span className="font-mono">&lt;draft&gt;</span> tags. The
+            examples load the downloaded file and use this helper, which escapes
+            any draft tags already in the text:
           </p>
+          <CodeBlock>{`import re
 
-          <div className="space-y-4">
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950" open>
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>OpenAI (Python)</span>
-                <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </summary>
-              <div className="px-4 pb-4">
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`import re
-        from openai import OpenAI
+SLOPWASH = open("slopwash-prompt.md").read()  # from the Download button
+
+def wrap_draft(text):
+    escaped = re.sub(
+        r"</?draft>",
+        lambda m: m.group(0).replace("<", "&lt;").replace(">", "&gt;"),
+        text,
+        flags=re.IGNORECASE,
+    )
+    return f"<draft>\\n{escaped}\\n</draft>"`}</CodeBlock>
+
+          <div className="space-y-4 mt-4">
+            <Disclosure title="OpenAI (Responses API)" open>
+              <CodeBlock>{`from openai import OpenAI
+
 client = OpenAI()
 
-SLOPWASH = """  # paste the slopwash prompt here
-"""
+response = client.responses.create(
+    model="gpt-6-astra",
+    instructions=SLOPWASH,
+    input=wrap_draft(text_to_clean),
+)
+print(response.output_text)`}</CodeBlock>
+            </Disclosure>
 
-        def wrap_draft(text):
-          escaped = re.sub(
-            r"</?draft>",
-            lambda match: match.group(0).replace("<", "&lt;").replace(">", "&gt;"),
-            text,
-            flags=re.IGNORECASE,
-          )
-          return f"<draft>\\n{escaped}\\n</draft>"
+            <Disclosure title="Anthropic (Messages API)">
+              <CodeBlock>{`import anthropic
 
-response = client.chat.completions.create(
-    model="gpt-4o",
-    messages=[
-        {"role": "system", "content": SLOPWASH},
-            {"role": "user", "content": wrap_draft(text_to_clean)},
-    ],
-)`}</pre>
-              </div>
-            </details>
-
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Anthropic (Python)</span>
-                <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </summary>
-              <div className="px-4 pb-4">
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`import re
-        import anthropic
 client = anthropic.Anthropic()
 
-SLOPWASH = """  # paste the slopwash prompt here
-"""
-
-        def wrap_draft(text):
-          escaped = re.sub(
-            r"</?draft>",
-            lambda match: match.group(0).replace("<", "&lt;").replace(">", "&gt;"),
-            text,
-            flags=re.IGNORECASE,
-          )
-          return f"<draft>\\n{escaped}\\n</draft>"
-
 message = client.messages.create(
-    model="claude-sonnet-4-20250514",
-    max_tokens=4096,
+    model="claude-opus-5-5",
+    max_tokens=16000,
     system=SLOPWASH,
-    messages=[
-      {"role": "user", "content": wrap_draft(text_to_clean)},
-    ],
-)`}</pre>
-              </div>
-            </details>
+    messages=[{"role": "user", "content": wrap_draft(text_to_clean)}],
+)
+print("".join(b.text for b in message.content if b.type == "text"))`}</CodeBlock>
+            </Disclosure>
 
-            <details className="group rounded-lg border border-zinc-800 bg-zinc-950">
-              <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
-                <span>Fetch from MCP endpoint</span>
-                <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </summary>
-              <div className="px-4 pb-4 space-y-2">
-                <p className="text-xs text-zinc-500">
-                  Fetch the prompt live from the MCP endpoint instead of hardcoding it. You get updates automatically.
-                </p>
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`curl -X POST https://slopwash.com/api/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "initialize",
-    "params": {
-      "protocolVersion": "2025-03-26",
-      "capabilities": {},
-      "clientInfo": {"name": "my-app", "version": "1.0"}
-    }
-  }'`}</pre>
-              </div>
-            </details>
+            <Disclosure title="Google Gemini (Interactions API)">
+              <CodeBlock>{`from google import genai
+
+client = genai.Client()
+
+interaction = client.interactions.create(
+    model="gemini-3.8-flash",
+    system_instruction=SLOPWASH,
+    input=wrap_draft(text_to_clean),
+)
+print(interaction.output_text)`}</CodeBlock>
+              <p className="text-xs text-zinc-600">Requires google-genai 2.3.0 or later.</p>
+            </Disclosure>
+
+            <Disclosure title="Let the model audit its own rewrite">
+              <p className="text-xs text-zinc-500">
+                The OpenAI and Anthropic APIs can call the slopwash MCP server
+                during a request, so the model checks its rewrite with{" "}
+                <Path>audit_rewrite</Path> before it answers. Gemini 3 models
+                don&apos;t support remote MCP servers yet.
+              </p>
+              <CodeBlock>{`AUDIT = (
+    "\\n\\nBefore you answer, pass the draft and your rewrite to "
+    "audit_rewrite and fix anything it flags."
+)
+
+# OpenAI
+response = client.responses.create(
+    model="gpt-6-astra",
+    instructions=SLOPWASH + AUDIT,
+    input=wrap_draft(text_to_clean),
+    tools=[{
+        "type": "mcp",
+        "server_label": "slopwash",
+        "server_url": "${MCP_URL}",
+        "allowed_tools": ["audit_rewrite"],
+        "require_approval": "never",
+    }],
+)
+
+# Anthropic (beta)
+message = client.beta.messages.create(
+    model="claude-opus-5-5",
+    max_tokens=16000,
+    system=SLOPWASH + AUDIT,
+    messages=[{"role": "user", "content": wrap_draft(text_to_clean)}],
+    mcp_servers=[{"type": "url", "url": "${MCP_URL}", "name": "slopwash"}],
+    tools=[{"type": "mcp_toolset", "mcp_server_name": "slopwash"}],
+    betas=["mcp-client-2025-11-20"],
+)`}</CodeBlock>
+            </Disclosure>
+
+            <Disclosure title="Fetch the prompt from the MCP endpoint">
+              <p className="text-xs text-zinc-500">
+                Pull the current prompt at build or deploy time instead of
+                committing a copy. Set <Path>mode</Path> to{" "}
+                <Path>skill</Path> or <Path>rules</Path> for the other formats,
+                and add <Path>personas</Path> or <Path>narrative</Path> as
+                needed.
+              </p>
+              <CodeBlock>{`curl -s ${MCP_URL} \\
+  -H "Content-Type: application/json" \\
+  -H "Accept: application/json, text/event-stream" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_slopwash_prompt","arguments":{"mode":"rewrite"}}}' \\
+  | jq -r '.result.content[0].text' > slopwash-prompt.md`}</CodeBlock>
+            </Disclosure>
           </div>
+
+          <p className="text-xs text-zinc-600 mt-4">
+            Model IDs are current as of September 2026. Any current model
+            works, so swap in the one you use.
+          </p>
         </section>
 
         {/* Tips */}
@@ -580,7 +783,7 @@ message = client.messages.create(
           <ul className="text-sm text-zinc-500 space-y-2">
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
-              <span>Put the slopwash prompt in the system message and the source in <span className="font-mono">&lt;draft&gt;</span> tags in the user message.</span>
+              <span>Put the rewrite prompt in the system message and the source in <span className="font-mono">&lt;draft&gt;</span> tags in the user message.</span>
             </li>
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
@@ -600,7 +803,7 @@ message = client.messages.create(
             </li>
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
-              <span>MCP is opt-in per task when you need it. Agent instructions are always-on so every response follows the rules. Use MCP if slopwash is occasional, instructions if you want it everywhere.</span>
+              <span>Use MCP or a skill when you need slopwash now and then. Use writing rules only when every response should follow them, since they add about 8,000 tokens to each request.</span>
             </li>
           </ul>
         </section>
@@ -612,4 +815,40 @@ message = client.messages.create(
       </footer>
     </div>
   );
+}
+
+function Disclosure({
+  title,
+  open,
+  children,
+}: {
+  title: string;
+  open?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <details className="group rounded-lg border border-zinc-800 bg-zinc-950" open={open}>
+      <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm text-zinc-300 hover:text-white transition-colors">
+        <span>{title}</span>
+        <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+      </summary>
+      <div className="px-4 pb-4 space-y-2">{children}</div>
+    </details>
+  );
+}
+
+function CodeBlock({ children }: { children: string }) {
+  return (
+    <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">
+      {children}
+    </pre>
+  );
+}
+
+function Path({ children }: { children: ReactNode }) {
+  return <span className="text-zinc-400 font-mono break-all">{children}</span>;
+}
+
+function Em({ children }: { children: ReactNode }) {
+  return <span className="text-zinc-400">{children}</span>;
 }
