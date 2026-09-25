@@ -44,9 +44,9 @@ export const personas: Persona[] = [
   {
     id: "manager",
     label: "Manager",
-    description: "Bottom-line-up-front, action-oriented, concise",
+    description: "Conclusion-first, action-oriented, concise",
     instructions: `VOICE OVERLAY: MANAGER
-Write like a director who respects everyone's time. Bottom line up front: state the conclusion or recommendation before the reasoning. Organize by priority, not chronology. Use clear, unambiguous language. If someone could misread it, rewrite it. Focus on decisions, actions, outcomes, and timelines over process descriptions. Bullet points are fine when they genuinely aid scanning, but don't make everything a list. Be concise without being cryptic. Acknowledge risks plainly. Skip motivational puff.`,
+Write like a director who respects everyone's time. State the conclusion or recommendation before the reasoning. Organize by priority, not chronology. Use clear, unambiguous language. If someone could misread it, rewrite it. Focus on decisions, actions, outcomes, and timelines over process descriptions. Bullet points are fine when they genuinely aid scanning, but don't make everything a list. Be concise without being cryptic. Acknowledge risks plainly. Skip motivational puff.`,
   },
   {
     id: "marketer",

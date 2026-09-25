@@ -1,5 +1,6 @@
 import type { Violation } from "../types";
 import { findAllMatches, countWords } from "../utils";
+import { SUMMARY_SHORTHAND } from "../word-lists";
 
 export function checkFormatting(text: string): Violation[] {
   const violations: Violation[] = [];
@@ -87,6 +88,22 @@ export function checkFormatting(text: string): Violation[] {
       offset: index,
       length: match.length,
     });
+  }
+
+  for (const phrase of SUMMARY_SHORTHAND) {
+    const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`\\b${escaped}\\b`, "gi");
+    for (const { index, match } of findAllMatches(text, pattern)) {
+      violations.push({
+        rule: "4.8",
+        section: 4,
+        severity: "moderate",
+        message: "Novelty summary label; use a plain summary or start with the point",
+        match,
+        offset: index,
+        length: match.length,
+      });
+    }
   }
 
   return violations;

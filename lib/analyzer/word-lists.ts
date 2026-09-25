@@ -132,11 +132,38 @@ export const TRANSITION_FILLERS = [
   "on the other hand",
 ];
 
+export const INTERNAL_BREADCRUMBS = [
+  "as we'll see",
+  "as we will see",
+  "as you'll see",
+  "as you will see",
+  "more on this later",
+  "more on that later",
+  "we'll return to this",
+  "we will return to this",
+  "we'll come back to this",
+  "we will come back to this",
+  "keep this in mind",
+  "as discussed below",
+  "as explained below",
+  "in the next section",
+  "the next section explains",
+  "later in this document",
+  "we'll discuss this later",
+  "we will discuss this later",
+  "this will matter later",
+  "we'll get to",
+  "we will get to",
+  "before we get to",
+];
+
 export const REVEAL_OPENERS = [
   "honestly",
   "frankly",
   "genuinely",
   "candidly",
+  "candid caveat",
+  "honest caveat",
   "to be honest",
   "let's be honest",
   "I'll be direct",
@@ -241,6 +268,19 @@ export const HOUSE_VOICE_PHRASES = [
   "both things can be true",
 ];
 
+export const SUMMARY_SHORTHAND = [
+  "BLUF",
+  "bottom line up front",
+  "TL;DR",
+  "ELI5",
+  "ICYMI",
+  "FWIW",
+  "YMMV",
+  "quick take",
+  "executive takeaway",
+  "net-net",
+];
+
 // --- Section 5: Content ---
 
 export const WEASEL_PHRASES = [
@@ -261,6 +301,13 @@ export const SOURCE_EXAGGERATION = [
   "several researchers have found",
   "many experts believe",
   "numerous studies have shown",
+];
+
+export const SOURCE_ASSURANCES = [
+  "from the source",
+  "according to the source",
+  "the source says",
+  "per the source",
 ];
 
 export const SIGNIFICANCE_CLAIMS = [

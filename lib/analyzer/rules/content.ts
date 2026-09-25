@@ -3,6 +3,7 @@ import { findAllMatches } from "../utils";
 import {
   WEASEL_PHRASES,
   SOURCE_EXAGGERATION,
+  SOURCE_ASSURANCES,
   SIGNIFICANCE_CLAIMS,
 } from "../word-lists";
 
@@ -45,6 +46,32 @@ export function checkContent(text: string): Violation[] {
       "Vague attribution (name the source)"
     )
   );
+
+  violations.push(
+    ...matchPhrases(
+      text,
+      SOURCE_ASSURANCES,
+      "5.10",
+      "moderate",
+      "Source assurance without direct attribution"
+    )
+  );
+
+  const inTheirWords =
+    /\bin\s+(?:(?:their|his|her|its)\s+(?:own\s+)?words|the\s+source['’]s\s+words)\b/gi;
+  for (const { index, match } of findAllMatches(text, inTheirWords)) {
+    const followingText = text.slice(index + match.length, index + match.length + 40);
+    if (/^\s*[:,]?\s*["“]/.test(followingText)) continue;
+    violations.push({
+      rule: "5.10",
+      section: 5,
+      severity: "moderate",
+      message: '"In their words" without a following quotation',
+      match,
+      offset: index,
+      length: match.length,
+    });
+  }
 
   // 5.3 — Source exaggeration
   violations.push(

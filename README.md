@@ -97,10 +97,10 @@ Paste the prompt into your editor's instruction file so every response follows t
 The analyzer engine (`lib/analyzer/`) is pure TypeScript with zero external dependencies. It checks text against six rule categories:
 
 1. **Vocabulary** — banned and flagged words/phrases
-2. **Structure** — formulaic contrasts, repeated decorative triplets, rhetorical questions, staccato runs, buttons, and Hollywood endings
-3. **Tone & Voice** — sycophancy, hedging, chat residue, drama adverbs, and model house voices
-4. **Formatting** — em dash overuse, bold overuse, emoji, title case headings
-5. **Content depth** — weasel phrases, source exaggeration, elegant variation
+2. **Structure** — formulaic contrasts, delayed scope qualifiers, internal breadcrumbs, staccato runs, buttons, and Hollywood endings
+3. **Tone & Voice** — sycophancy, hedging, chat residue, reception shorthand, drama adverbs, and model house voices
+4. **Formatting** — em dash overuse, bold overuse, emoji, title case headings, and novelty summary labels
+5. **Content depth** — unsupported source assurances, source exaggeration, and elegant variation
 6. **Consistency** — false emotional understanding, frictionless adoption language
 
 Model-specific profiles (GPT-4o, Claude, Gemini, Llama) add additional pattern detection.

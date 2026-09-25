@@ -3,6 +3,7 @@ import { findAllMatches, splitSentences } from "../utils";
 import {
   ANSWER_LABELS,
   BUTTON_PHRASES,
+  INTERNAL_BREADCRUMBS,
   SUMMARY_OPENERS,
   TRANSITION_FILLERS,
 } from "../word-lists";
@@ -295,6 +296,85 @@ export function checkStructure(text: string): Violation[] {
       offset: Math.max(offset, 0),
       length: match.length,
     });
+  }
+
+  const delayedScopePatterns = [
+    /\bwhatever\s+[^,.!?\n]{1,60}\s+means?\s+(?:in|for|within)\b[^.!?\n]*/gi,
+    /,\s+(?:written|designed|built|created|prepared|intended|meant|aimed|tailored|structured|organized|owned|led|managed)\s+(?:for|to|around|as|by)\b[^.!?\n]*/gi,
+    /,\s+for\s+(?:the\s+)?(?:marketing|sales|support|product|engineering|legal|finance|operations|leadership|executive|customer|customers|users|teams?|audiences?|stakeholders?|MVP|launch|pilot|beta|rollout|release)\b[^.!?\n]*/gi,
+    /,\s+(?:at|during|before|after)\s+(?:the\s+)?(?:MVP|launch|pilot|beta|prototype|rollout|release|start|end|scale|first|later|each|every)\b[^.!?\n]*/gi,
+  ];
+  const delayedScopeRanges: { start: number; end: number }[] = [];
+  for (const pattern of delayedScopePatterns) {
+    for (const { index, match } of findAllMatches(text, pattern)) {
+      const end = index + match.length;
+      if (
+        delayedScopeRanges.some(
+          (range) => index < range.end && end > range.start
+        )
+      ) {
+        continue;
+      }
+      delayedScopeRanges.push({ start: index, end });
+      violations.push({
+        rule: "2.17",
+        section: 2,
+        severity: "moderate",
+        message: "Delayed scope qualifier; put it beside the term it limits",
+        match,
+        offset: index,
+        length: match.length,
+      });
+    }
+  }
+
+  const breadcrumbRanges: { start: number; end: number }[] = [];
+  for (const phrase of INTERNAL_BREADCRUMBS) {
+    const pattern = new RegExp(`\\b${escapeRegex(phrase)}\\b`, "gi");
+    for (const { index, match } of findAllMatches(text, pattern)) {
+      const end = index + match.length;
+      if (
+        breadcrumbRanges.some((range) => index < range.end && end > range.start)
+      ) {
+        continue;
+      }
+      breadcrumbRanges.push({ start: index, end });
+      violations.push({
+        rule: "2.18",
+        section: 2,
+        severity: "moderate",
+        message: "Internal breadcrumb; state the point where it belongs",
+        match,
+        offset: index,
+        length: match.length,
+      });
+    }
+  }
+
+  const breadcrumbPatterns = [
+    /\b(?:we|I)(?:['’]ll|\s+will)\s+(?:cover|explain|discuss|show|address|return\s+to|come\s+back\s+to)\s+[^.!?\n]{0,80}\s+(?:later|below|in\s+the\s+next\s+section)\b/gi,
+    /\b(?:later|below),?\s+(?:we|I)(?:['’]ll|\s+will)\s+(?:cover|explain|discuss|show|address|return)\b/gi,
+    /\b(?:the\s+following|the\s+next)\s+section\s+(?:covers|explains|shows|discusses|addresses)\b/gi,
+  ];
+  for (const pattern of breadcrumbPatterns) {
+    for (const { index, match } of findAllMatches(text, pattern)) {
+      const end = index + match.length;
+      if (
+        breadcrumbRanges.some((range) => index < range.end && end > range.start)
+      ) {
+        continue;
+      }
+      breadcrumbRanges.push({ start: index, end });
+      violations.push({
+        rule: "2.18",
+        section: 2,
+        severity: "moderate",
+        message: "Internal breadcrumb; state the point where it belongs",
+        match,
+        offset: index,
+        length: match.length,
+      });
+    }
   }
 
   return violations;

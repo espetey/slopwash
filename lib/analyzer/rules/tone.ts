@@ -76,5 +76,26 @@ export function checkTone(text: string): Violation[] {
     )
   );
 
+  const receptionShorthand = [
+    /\b(?:this|that)\s+(?:really\s+|actually\s+)?(?:(?:will|may|should)\s+land|land(?:s|ed)?)(?:\s+(?:well|badly))?\b/gi,
+    /\bit\s+(?:(?:will|may|should)\s+land|land(?:s|ed)?)\s+(?:well|badly)\b/gi,
+    /\b(?:how|where)\s+(?:this|that|it|the\s+(?:point|message|idea|copy|phrase|wording|argument|line|proposal|story|recommendation|summary|opening|ending|claim))\s+(?:(?:will|may|should)\s+land|land(?:s|ed)?)\b/gi,
+    /\bthe\s+(?:point|message|idea|copy|phrase|wording|argument|line|proposal|story|recommendation|summary|opening|ending|claim)\s+(?:(?:will|may|should)\s+land|land(?:s|ed)?|does(?:n['’]t|\s+not)\s+land)\b/gi,
+    /\bland(?:s|ed)?\s+(?:well|badly)\s+with\b/gi,
+  ];
+  for (const pattern of receptionShorthand) {
+    for (const { index, match } of findAllMatches(text, pattern)) {
+      violations.push({
+        rule: "3.11",
+        section: 3,
+        severity: "moderate",
+        message: "Vague reception shorthand; name the supported judgment",
+        match,
+        offset: index,
+        length: match.length,
+      });
+    }
+  }
+
   return violations;
 }

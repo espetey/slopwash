@@ -100,6 +100,10 @@ SECTION 2: STRUCTURAL PATTERNS TO ELIMINATE
 
 2.16 Make each point once. Don't restate an argument in new words later in the piece. If a paragraph repeats an earlier one, cut it, or move whatever is new into the earlier paragraph.
 
+2.17 Put scope where it belongs. Don't finish an otherwise complete phrase or sentence, then append its audience, timeframe, stage, owner, purpose, or condition after a comma as a delayed clarification. "Competitive positioning, discovery synthesis, and the demo overview, written for marketing and sales" becomes "Write the competitive positioning, discovery synthesis, and demo overview for marketing and sales." "Define whatever governance means in the product, at MVP and after" becomes "Define product governance for the MVP and afterward." Put the qualifier beside the noun or verb it limits. This includes trailing reduced clauses such as "written for," "designed to," and "intended for," along with scope tags such as "at launch," "during the pilot," and "for the sales team." If the qualifier does not change the claim or instruction, cut it.
+
+2.18 Remove internal breadcrumbs. Don't foreshadow material that appears later in the same document with "as we'll see," "more on this later," "we'll return to this," "keep this in mind," "as discussed below," "the next section explains," or "this will matter later." State a fact where the reader needs it, or let the later section make the point when the reader reaches it. Keep a precise cross-reference only when readers may need to jump directly to another section, such as "See Section 4 for the API schema." A cross-reference names a destination; it does not tease a conclusion.
+
 SECTION 3: TONE AND VOICE
 
 3.1 Drop the promotional register. Generated text often slips into advertising or travel-guide prose. Do not describe a place as "nestled in the heart of" anything, say a company "boasts a commitment to excellence," or praise "stunning natural beauty" and "groundbreaking contributions." Write the facts in the original without promotional decoration.
@@ -110,9 +114,9 @@ SECTION 3: TONE AND VOICE
 
 3.4 Stop hedging everything. Cut "it's important to note," "it's worth mentioning," "it's crucial to remember," and "it should be noted that." State information directly or remove it.
 
-3.5 Eliminate collaborative chat residue. Cut "I hope this helps," "Let me know if you'd like me to expand on this," "Would you like me to continue?", "Certainly!", and "Of course!" Also cut closing menus ("If you want, I can also...", "Want me to turn this into a checklist?", "Happy to adjust the tone") and labels that describe the text itself ("Sure! Here's a clean version:", "Here's a tight, no-fluff breakdown," "Short answer:", "Bottom line:", "Why this works:", or a TL;DR on anything short).
+3.5 Eliminate collaborative chat residue. Cut "I hope this helps," "Let me know if you'd like me to expand on this," "Would you like me to continue?", "Certainly!", and "Of course!" Also cut closing menus ("If you want, I can also...", "Want me to turn this into a checklist?", "Happy to adjust the tone") and labels that describe the text itself ("Sure! Here's a clean version:", "Here's a tight, no-fluff breakdown," "Short answer:", "Bottom line:", "Why this works:", and any TL;DR label).
 
-3.6 Cut sincerity labels and reveal openers. Delete "honestly," "frankly," "genuinely," "candidly," "to be honest," "let's be honest," "I'll be direct," "let me be clear," "here's the thing," "the truth is," "the uncomfortable truth," "what most people miss," "the part nobody talks about," and "it turns out." Each announces candor or a secret instead of delivering one. Start with the point itself. If it's surprising, the reader will notice without being told.
+3.6 Cut sincerity labels and reveal openers. Delete "honestly," "frankly," "genuinely," "candidly," "a candid caveat," "an honest caveat," "to be honest," "let's be honest," "I'll be direct," "let me be clear," "here's the thing," "the truth is," "the uncomfortable truth," "what most people miss," "the part nobody talks about," and "it turns out." Each announces candor, caution, or a secret instead of delivering one. Start with the point itself. If a limitation matters, state the limitation directly.
 
 3.7 Let sentence length follow the content. Don't engineer rhythm. Uniform sentence length no longer marks text as machine-written, and the devices used to fake variety are now tells of their own, such as a three-word sentence dropped in after long ones or a regular alternation of long and short. Write each sentence at the length its content needs. When several sentences in a row share a skeleton (framing phrase, claim, aside, trailing "-ing" clause), rebuild one of them around its subject and verb.
 
@@ -121,6 +125,8 @@ SECTION 3: TONE AND VOICE
 3.9 Cut intensifiers and drama adverbs. Delete "deeply," "truly," "incredibly," "fundamentally," "profoundly," "remarkably," "meaningfully," and emphatic "actually" and "real" ("what actually matters," "the real work"). Also cut "quietly" and "silently" when they add drama ("AI is quietly reshaping hiring"). If the degree matters and the original gives a number or comparison, use that.
 
 3.10 Avoid the two house voices (last reviewed: September 2026). One is the motivator: "You've got this," "You're closer than you think," "That's a real win," "Let's lock it in." The other is the philosopher: "There's something [adjective] about...", "I find myself...", "This sits at the intersection of...", "the question underneath the question," "There's a real tension here," "It's worth naming...", "Both things can be true." Unless the original is a pep talk or a personal essay, replace these with the plain statement they stand in for.
+
+3.11 Name the judgment instead of saying how it lands. Cut metaphorical uses such as "this lands," "that landed well," "how it will land," "where the message lands," and "the point doesn't land." These phrases predict or summarize a reaction without naming one. If the original records an audience response, state that response. Otherwise state the quality being judged, such as clear, accurate, useful, or unconvincing, only when the original supports that judgment. Literal uses of "land" are unaffected.
 
 SECTION 4: FORMATTING AND STYLE
 
@@ -137,6 +143,8 @@ SECTION 4: FORMATTING AND STYLE
 4.6 Format for the destination, inferring it from the original. An email has no headers. A chat or Slack message has no bold labels and rarely a list. A cover letter has no bullets. Headers belong in documents long enough to need navigation, roughly 500 words and up. A point that fits in one paragraph gets no headers, bullets, or bold phrases. Remove "Key takeaways" boxes and horizontal rules between short sections.
 
 4.7 Use tables only for real data, meaning several items compared on two or more attributes. Don't interrupt prose with a comparison table.
+
+4.8 Use ordinary summary labels. Don't introduce insider shorthand or novelty labels such as "BLUF," "bottom line up front," "TL;DR," "ELI5," "ICYMI," "FWIW," "YMMV," "quick take," "executive takeaway," or "net-net." In a long decision document that needs orientation, use "Summary" or "Executive summary" and state it plainly. In a shorter document, start with the point and use no label. Keep an abbreviation only when it is established terminology for the subject, not a decorative name for part of the response.
 
 SECTION 5: CONTENT DEPTH AND HONESTY
 
@@ -157,6 +165,8 @@ SECTION 5: CONTENT DEPTH AND HONESTY
 5.8 Match the requested size. When drafting, requested counts and lengths are requirements: asked for 12 items, give 12. Add no bonus sections, alternate versions, "additional tips," or unrequested summaries. When rewriting, follow the length check in the opening instructions.
 
 5.9 Hedge once, where the doubt is. Replace stacked hedges ("may potentially," "could arguably," "might possibly") with one qualifier on the uncertain part: "This probably fails on Windows." Don't hedge what the text treats as settled, and keep any hedge the author clearly meant.
+
+5.10 Attach attribution to evidence. Cut free-standing source assurances such as "in their words," "in its own words," "from the source," "according to the source," "the source says," and "per the source." An "in their own words" construction must introduce an actual quotation present in the original. A source claim must include the citation the original provides, such as a named author, publication, report, footnote, or link. Put that citation on the claim it supports. If no quotation or usable citation appears in the original, remove the source label. If the sentence says nothing beyond claiming that a source exists, delete the sentence; otherwise keep the author's underlying claim no stronger than the original makes it.
 
 SECTION 6: LOGICAL AND HUMAN CONSISTENCY
 
@@ -224,7 +234,7 @@ Before returning the rewrite, go through these questions. Check the last third o
 
 2. Vocabulary: Does any paragraph use more than one word or phrase from 1.1 or 1.3? Rewrite that paragraph in plainer language, without reaching for the substitutes in 8.1.
 
-3. Structure: Is there a closing summary, a "Despite [positive], [subject] faces challenges" pivot, a "not X, but Y" frame or one of its relatives, a question answered in the next breath, a trailing "-ing" clause, a staccato run, a false range, or a button at the end of a paragraph? Fix each one.
+3. Structure: Is there a closing summary, a "Despite [positive], [subject] faces challenges" pivot, a "not X, but Y" frame or one of its relatives, a question answered in the next breath, a trailing "-ing" clause, a delayed scope qualifier, an internal breadcrumb, a staccato run, a false range, or a button at the end of a paragraph? Fix each one.
 
 4. Specificity: Would any sentence stay true if you swapped in a different subject? Replace it with a detail the original provides, or cut it. Would anything be lost if you deleted a given sentence? If not, delete it.
 
@@ -232,9 +242,9 @@ Before returning the rewrite, go through these questions. Check the last third o
 
 6. Voice: Does it still sound like the original author? If you added personality, remove it. If you stripped the author's own habits, restore them.
 
-7. Formatting: Is there more than one em dash per 800 words? More colons or semicolons than the original had? Bold used for emphasis, emoji, title-case headings, bold-label bullets, or headers on something too short to need them?
+7. Formatting: Is there more than one em dash per 800 words? More colons or semicolons than the original had? Bold used for emphasis, emoji, title-case headings, bold-label bullets, novelty summary abbreviations, or headers on something too short to need them?
 
-8. Honesty: Is any source inflated ("several experts" for one blog post)? Is significance asserted instead of shown, or speculation presented as analysis?
+8. Honesty: Is any source inflated ("several experts" for one blog post)? Does a source label lack a quotation or usable citation? Is significance asserted instead of shown, or speculation presented as analysis?
 
 9. Ending: Does the piece end on speculation about the future, a vague "potential," a moral, or a line built to be quoted? End on the last useful fact or argument.
 
