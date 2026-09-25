@@ -28,7 +28,7 @@ const GEMINI_TELLS = [
 export const geminiProfile: ModelProfile = {
   id: "gemini",
   label: "Gemini",
-  promptOverlay: `MODEL-SPECIFIC PATTERNS — Gemini
+  promptOverlay: `MODEL-SPECIFIC PATTERNS: GEMINI
 The following tells are especially common in Gemini output. Watch for them in addition to the general rules:
 - "That's a great question!" as an opening reflex
 - "Absolutely!" as a filler agreement

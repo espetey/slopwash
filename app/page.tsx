@@ -42,11 +42,14 @@ const MCP_CONFIGS = [
 
 export default function Home() {
   const [activePersonas, setActivePersonas] = useState<Set<string>>(new Set());
+  const [includeNarrative, setIncludeNarrative] = useState(false);
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const promptRef = useRef<HTMLPreElement>(null);
 
-  const prompt = buildPrompt(Array.from(activePersonas));
+  const prompt = buildPrompt(Array.from(activePersonas), undefined, {
+    includeNarrative,
+  });
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
   const [selectedEditor, setSelectedEditor] = useState<string | null>(null);
   const selectedConfig = selectedEditor
@@ -62,6 +65,7 @@ export default function Home() {
   }, []);
 
   const togglePersona = useCallback((id: string) => {
+    const enabling = !activePersonas.has(id);
     setActivePersonas((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -71,7 +75,10 @@ export default function Home() {
       }
       return next;
     });
-  }, []);
+    if (id === "novelist" && enabling) {
+      setIncludeNarrative(true);
+    }
+  }, [activePersonas]);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -116,7 +123,7 @@ export default function Home() {
           Copy it, paste it into your LLM, and get output that reads like a
           human wrote it.
         </p>
-        <div className="mt-4 flex items-center justify-center gap-5 text-xs">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
           <a href="#how-to-use" className="nav-link-haze">How to use</a>
           <a href="#mcp-quick-start" className="nav-link-haze">MCP</a>
           <a href="#agent-instructions" className="nav-link-haze">Agent rules</a>
@@ -155,6 +162,34 @@ export default function Home() {
               </button>
             ))}
           </div>
+          <div className="mt-4 flex items-center justify-between gap-4 border-t border-zinc-900 pt-4">
+            <div>
+              <p className="text-sm text-zinc-300">Narrative rules</p>
+              <p className="text-xs text-zinc-600">
+                Section 9 for fiction, scenes, and narrative nonfiction
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={includeNarrative}
+              onClick={() => setIncludeNarrative((enabled) => !enabled)}
+              className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors cursor-pointer ${
+                includeNarrative
+                  ? "border-teal-500/50 bg-teal-500/25"
+                  : "border-zinc-700 bg-zinc-900"
+              }`}
+            >
+              <span
+                className={`absolute left-0.5 top-0.5 h-4.5 w-4.5 rounded-full transition-transform ${
+                  includeNarrative
+                    ? "translate-x-5 bg-teal-300"
+                    : "translate-x-0 bg-zinc-500"
+                }`}
+              />
+              <span className="sr-only">Toggle narrative rules</span>
+            </button>
+          </div>
         </section>
 
         {/* Prompt display */}
@@ -172,11 +207,14 @@ export default function Home() {
                     .join(", ")}
                 </span>
               )}
+                {includeNarrative && (
+                  <span className="text-teal-500/80"> + narrative</span>
+                )}
             </span>
             <button
               onClick={handleCopy}
               className={`
-                px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
+                shrink-0 whitespace-nowrap px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
                 cursor-pointer
                 ${
                   copied
@@ -218,9 +256,10 @@ export default function Home() {
             </h2>
             <ol className="text-sm text-zinc-500 space-y-1.5 list-decimal list-inside">
               <li>Pick one or more personas to layer in a specific voice (optional)</li>
+              <li>Turn on narrative rules only for stories and scenes</li>
               <li>Copy the prompt</li>
               <li>Paste it as a system instruction or at the top of any LLM chat</li>
-              <li>Add the text you want cleaned</li>
+              <li>Send the text inside <span className="text-zinc-400 font-mono">&lt;draft&gt;...&lt;/draft&gt;</span> tags</li>
             </ol>
             <p className="text-xs text-zinc-600 mt-2">
               Works with GPT-4o, Claude, Gemini, Llama, Mistral, and other models.
@@ -238,9 +277,9 @@ export default function Home() {
               https://slopwash.com/api/mcp
             </code>
             <p className="text-xs text-zinc-600 mt-2">
-              Tool: <span className="text-zinc-400">get_slopwash_prompt</span>{" "}
-              &middot; Optional param:{" "}
-              <span className="text-zinc-400">personas</span>
+              Tools: <span className="text-zinc-400">prepare_rewrite</span>,{" "}
+              <span className="text-zinc-400">audit_rewrite</span>, and{" "}
+              <span className="text-zinc-400">analyze_text</span>
             </p>
           </div>
         </section>
@@ -293,13 +332,14 @@ export default function Home() {
           )}
 
           <p className="text-xs text-zinc-600 mt-4">
-            Once connected, your agent gets a{" "}
-            <span className="text-zinc-400">get_slopwash_prompt</span> tool.
-            Call it (optionally with{" "}
+            Once connected, call{" "}
+            <span className="text-zinc-400">prepare_rewrite</span> with the source text.
+            It returns separate system and draft-wrapped user messages. You can add{" "}
             <span className="text-zinc-400">personas</span> like{" "}
             <span className="text-teal-500/80">&quot;journalist&quot;</span> or{" "}
-            <span className="text-teal-500/80">&quot;humorist&quot;</span>) and
-            use the returned prompt as a system prompt when rewriting text.
+            <span className="text-teal-500/80">&quot;humorist&quot;</span>. After the model
+            responds, call <span className="text-zinc-400">audit_rewrite</span> and
+            use its retry message once if the audit fails.
           </p>
         </section>
 
@@ -436,7 +476,7 @@ export default function Home() {
             API usage
           </h2>
           <p className="text-sm text-zinc-500 mb-4">
-            When calling an LLM API directly, use slopwash as your system message.
+            Use slopwash as the system message and wrap untrusted source text before sending it.
           </p>
 
           <div className="space-y-4">
@@ -446,17 +486,27 @@ export default function Home() {
                 <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
               </summary>
               <div className="px-4 pb-4">
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`from openai import OpenAI
+                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`import re
+        from openai import OpenAI
 client = OpenAI()
 
 SLOPWASH = """  # paste the slopwash prompt here
 """
 
+        def wrap_draft(text):
+          escaped = re.sub(
+            r"</?draft>",
+            lambda match: match.group(0).replace("<", "&lt;").replace(">", "&gt;"),
+            text,
+            flags=re.IGNORECASE,
+          )
+          return f"<draft>\\n{escaped}\\n</draft>"
+
 response = client.chat.completions.create(
     model="gpt-4o",
     messages=[
         {"role": "system", "content": SLOPWASH},
-        {"role": "user", "content": text_to_clean},
+            {"role": "user", "content": wrap_draft(text_to_clean)},
     ],
 )`}</pre>
               </div>
@@ -468,18 +518,28 @@ response = client.chat.completions.create(
                 <svg className="w-4 h-4 text-zinc-500 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
               </summary>
               <div className="px-4 pb-4">
-                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`import anthropic
+                <pre className="text-xs bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-teal-400 font-mono overflow-x-auto whitespace-pre">{`import re
+        import anthropic
 client = anthropic.Anthropic()
 
 SLOPWASH = """  # paste the slopwash prompt here
 """
+
+        def wrap_draft(text):
+          escaped = re.sub(
+            r"</?draft>",
+            lambda match: match.group(0).replace("<", "&lt;").replace(">", "&gt;"),
+            text,
+            flags=re.IGNORECASE,
+          )
+          return f"<draft>\\n{escaped}\\n</draft>"
 
 message = client.messages.create(
     model="claude-sonnet-4-20250514",
     max_tokens=4096,
     system=SLOPWASH,
     messages=[
-        {"role": "user", "content": text_to_clean},
+      {"role": "user", "content": wrap_draft(text_to_clean)},
     ],
 )`}</pre>
               </div>
@@ -520,7 +580,7 @@ message = client.messages.create(
           <ul className="text-sm text-zinc-500 space-y-2">
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
-              <span>Paste the slopwash prompt before your text, not after. System prompts work best as a preamble.</span>
+              <span>Put the slopwash prompt in the system message and the source in <span className="font-mono">&lt;draft&gt;</span> tags in the user message.</span>
             </li>
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
@@ -533,6 +593,10 @@ message = client.messages.create(
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
               <span>For best results, don&apos;t layer on other tasks. Give the model the slopwash prompt and the text to clean.</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-teal-500/60 shrink-0">&bull;</span>
+              <span>Run model output through <span className="font-mono">audit_rewrite</span>. If it fails, use its retry message for one correction pass.</span>
             </li>
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>

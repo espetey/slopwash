@@ -32,7 +32,7 @@ const CLAUDE_TELLS = [
 export const claudeProfile: ModelProfile = {
   id: "claude",
   label: "Claude",
-  promptOverlay: `MODEL-SPECIFIC PATTERNS — Claude
+  promptOverlay: `MODEL-SPECIFIC PATTERNS: CLAUDE
 The following tells are especially common in Claude output. Watch for them in addition to the general rules:
 - "I'd be happy to help" as a default preamble
 - "I should note" before caveats

@@ -1,13 +1,22 @@
 import type { Violation } from "../types";
 import { findAllMatches, splitSentences } from "../utils";
-import { SUMMARY_OPENERS, TRANSITION_FILLERS } from "../word-lists";
+import {
+  ANSWER_LABELS,
+  BUTTON_PHRASES,
+  SUMMARY_OPENERS,
+  TRANSITION_FILLERS,
+} from "../word-lists";
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 export function checkStructure(text: string): Violation[] {
   const violations: Violation[] = [];
 
   // 2.1 — "Not just X, but also Y"
   const notJust =
-    /\bnot\s+(just|only)\s+[^,.!?]+[,;]\s*(but\s+(also|it['']?s)|it['']?s\s+also)\b/gi;
+    /\bnot\s+(?:just|only)\s+[^,.!?]+(?:\s*[,;]\s*|\s+)but(?:\s+also)?\s+[^.!?]+/gi;
   for (const { index, match } of findAllMatches(text, notJust)) {
     violations.push({
       rule: "2.1",
@@ -20,20 +29,44 @@ export function checkStructure(text: string): Violation[] {
     });
   }
 
-  // 2.2 — Rule of three (3 comma-separated items ending with "and")
+  const contrastRelatives = [
+    /\bnot\s+because\s+[^,.!?]+[,;]\s*but\s+because\s+[^.!?]+/gi,
+    /\bless\s+like\s+[^,.!?]+\s+and\s+more\s+like\s+[^.!?]+/gi,
+    /\b(?:it|this|that)\s+(?:isn['’]t|wasn['’]t)\s+[^.!?]+\.\s+(?:it|this|that)\s+(?:is|was)\s+[^.!?]+/gi,
+    /\b[^.!?]+\s+isn['’]t\s+the\s+problem\.\s+[^.!?]+\s+is\b/gi,
+  ];
+  for (const pattern of contrastRelatives) {
+    for (const { index, match } of findAllMatches(text, pattern)) {
+      violations.push({
+        rule: "2.1",
+        section: 2,
+        severity: "moderate",
+        message: "Formulaic contrast frame",
+        match,
+        offset: index,
+        length: match.length,
+      });
+    }
+  }
+
+  // 2.2: Repeated decorative triplets. A single triplet may be factual.
   const ruleOfThree =
     /\b(\w[\w\s]{0,30}),\s+(\w[\w\s]{0,30}),\s+and\s+(\w[\w\s]{0,30})\b/gi;
-  for (const { index, match } of findAllMatches(text, ruleOfThree)) {
-    // Only flag if each item is roughly the same structure (heuristic: similar word count)
-    const parts = match.split(/,\s+|,\s+and\s+/);
-    if (parts.length >= 3) {
+  let paragraphCursor = 0;
+  for (const paragraph of text.split(/\n\s*\n/)) {
+    const paragraphOffset = text.indexOf(paragraph, paragraphCursor);
+    paragraphCursor = Math.max(paragraphOffset, paragraphCursor) + paragraph.length;
+    const triplets = findAllMatches(paragraph, ruleOfThree);
+    if (triplets.length < 2) continue;
+
+    for (const { index, match } of triplets) {
       violations.push({
         rule: "2.2",
         section: 2,
-        severity: "moderate",
-        message: "Rule of three: exactly three comma-separated items",
+        severity: "low",
+        message: "Repeated triplet pattern; keep all items if they are factual",
         match,
-        offset: index,
+        offset: Math.max(paragraphOffset, 0) + index,
         length: match.length,
       });
     }
@@ -90,6 +123,19 @@ export function checkStructure(text: string): Violation[] {
     }
   }
 
+  const consequenceFiller = /\b(?:plays?\s+a\s+role\s+in|contributes?\s+to|helps?\s+ensure)\b/gi;
+  for (const { index, match } of findAllMatches(text, consequenceFiller)) {
+    violations.push({
+      rule: "2.5",
+      section: 2,
+      severity: "low",
+      message: "Indirect consequence phrase; state the consequence or cut it",
+      match,
+      offset: index,
+      length: match.length,
+    });
+  }
+
   // 2.7 — Rhetorical question opener
   // A question mark followed within ~200 chars by an answer pattern
   const rhetorical =
@@ -104,6 +150,21 @@ export function checkStructure(text: string): Violation[] {
       offset: index,
       length: match.length,
     });
+  }
+
+  for (const label of ANSWER_LABELS) {
+    const pattern = new RegExp(`\\b${escapeRegex(label)}\\s*[?:]`, "gi");
+    for (const { index, match } of findAllMatches(text, pattern)) {
+      violations.push({
+        rule: "2.7",
+        section: 2,
+        severity: "moderate",
+        message: "Dramatic answer label",
+        match,
+        offset: index,
+        length: match.length,
+      });
+    }
   }
 
   // 2.8 — Hollywood ending
@@ -163,6 +224,75 @@ export function checkStructure(text: string): Violation[] {
       message: "Definition opener pattern",
       match,
       offset: index,
+      length: match.length,
+    });
+  }
+
+  const signposting =
+    /\b(?:in\s+this\s+(?:article|guide),?\s+(?:we(?:['’]ll|\s+will)\s+(?:explore|cover)|you(?:['’]ll|\s+will)\s+learn)|let['’]s\s+take\s+a\s+look\s+at|this\s+guide\s+covers)\b/gi;
+  for (const { index, match } of findAllMatches(text, signposting)) {
+    violations.push({
+      rule: "2.11",
+      section: 2,
+      severity: "moderate",
+      message: "Opening signpost that delays the first useful point",
+      match,
+      offset: index,
+      length: match.length,
+    });
+  }
+
+  for (const phrase of BUTTON_PHRASES) {
+    const pattern = new RegExp(
+      `\\b${escapeRegex(phrase)}[.!?]?(?=\\s*(?:\\n\\s*\\n|$))`,
+      "gi"
+    );
+    for (const { index, match } of findAllMatches(text, pattern)) {
+      violations.push({
+        rule: "2.12",
+        section: 2,
+        severity: "moderate",
+        message: "Paragraph-ending button",
+        match,
+        offset: index,
+        length: match.length,
+      });
+    }
+  }
+
+  const staccatoRun =
+    /\b(?:No|Not)\s+[^.!?\n]{1,60}\.\s+(?:No|Not)\s+[^.!?\n]{1,60}\.\s+(?:Just\s+)?[^.!?\n]{1,60}[.!?]/g;
+  for (const { index, match } of findAllMatches(text, staccatoRun)) {
+    violations.push({
+      rule: "2.13",
+      section: 2,
+      severity: "moderate",
+      message: "Staccato fragment run",
+      match,
+      offset: index,
+      length: match.length,
+    });
+  }
+
+  for (let sentenceIndex = 2; sentenceIndex < sentences.length; sentenceIndex++) {
+    const run = sentences.slice(sentenceIndex - 2, sentenceIndex + 1);
+    const openings = run.map((sentence) => {
+      const opening = sentence.trim().match(/^["'“‘([]*([A-Za-z0-9'’-]+\s+[A-Za-z0-9'’-]+)/);
+      return opening?.[1]?.toLowerCase();
+    });
+    if (!openings[0] || !openings.every((opening) => opening === openings[0])) {
+      continue;
+    }
+
+    const match = run.join(" ");
+    const offset = text.indexOf(run[0]);
+    violations.push({
+      rule: "2.15",
+      section: 2,
+      severity: "low",
+      message: `Three sentences repeat the opening "${openings[0]}"`,
+      match,
+      offset: Math.max(offset, 0),
       length: match.length,
     });
   }

@@ -27,4 +27,5 @@ export interface AnalysisResult {
 
 export interface AnalyzeOptions {
   model?: string;
+  narrative?: boolean;
 }

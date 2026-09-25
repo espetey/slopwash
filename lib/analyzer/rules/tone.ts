@@ -1,10 +1,12 @@
 import type { Violation } from "../types";
-import { findAllMatches, sentenceWordCounts, standardDeviation } from "../utils";
+import { findAllMatches } from "../utils";
 import {
   HEDGING_PHRASES,
   CHAT_RESIDUE,
-  FALSE_INTIMACY,
   SYCOPHANTIC_OPENERS,
+  REVEAL_OPENERS,
+  DRAMA_WORDS,
+  HOUSE_VOICE_PHRASES,
 } from "../word-lists";
 
 function matchPhrases(
@@ -17,7 +19,9 @@ function matchPhrases(
   const violations: Violation[] = [];
   for (const phrase of phrases) {
     const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const pattern = new RegExp(`\\b${escaped}\\b`, "gi");
+    const startBoundary = /^\w/.test(phrase) ? "\\b" : "";
+    const endBoundary = /\w$/.test(phrase) ? "\\b" : "";
+    const pattern = new RegExp(`${startBoundary}${escaped}${endBoundary}`, "gi");
     for (const { index, match } of findAllMatches(text, pattern)) {
       violations.push({
         rule,
@@ -51,29 +55,26 @@ export function checkTone(text: string): Violation[] {
     ...matchPhrases(text, CHAT_RESIDUE, "3.5", "high", "Chat residue")
   );
 
-  // 3.6 — False intimacy
+  // 3.6: Sincerity labels and reveal openers
   violations.push(
-    ...matchPhrases(text, FALSE_INTIMACY, "3.6", "low", "False intimacy")
+    ...matchPhrases(text, REVEAL_OPENERS, "3.6", "low", "Reveal opener")
   );
 
-  // 3.7 — Sentence length uniformity
-  // Flag if the standard deviation of sentence word counts is very low
-  // (indicating mechanical uniformity). Threshold: stdev < 4 with 5+ sentences.
-  const wordCounts = sentenceWordCounts(text);
-  if (wordCounts.length >= 5) {
-    const stdev = standardDeviation(wordCounts);
-    if (stdev < 4) {
-      violations.push({
-        rule: "3.7",
-        section: 3,
-        severity: "moderate",
-        message: `Sentence length uniformity detected (std dev: ${stdev.toFixed(1)} words). Human writing varies more.`,
-        match: `${wordCounts.length} sentences, std dev ${stdev.toFixed(1)}`,
-        offset: 0,
-        length: 0,
-      });
-    }
-  }
+  // 3.9: Intensifiers and drama adverbs
+  violations.push(
+    ...matchPhrases(text, DRAMA_WORDS, "3.9", "low", "Drama intensifier")
+  );
+
+  // 3.10: Motivator and philosopher house voices
+  violations.push(
+    ...matchPhrases(
+      text,
+      HOUSE_VOICE_PHRASES,
+      "3.10",
+      "moderate",
+      "Model house voice"
+    )
+  );
 
   return violations;
 }

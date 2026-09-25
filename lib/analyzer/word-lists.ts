@@ -88,6 +88,29 @@ export const COPULA_SUBSTITUTES = [
   "stands as",
 ];
 
+export const CURRENT_MODEL_WATCH_PHRASES = [
+  "matters because",
+  "what matters more than",
+  "this matters",
+  "without sacrificing",
+  "without losing",
+  "without compromising",
+  "is genuinely",
+  "less like",
+  "load-bearing",
+];
+
+export const CURRENT_MODEL_WATCH_WORDS = [
+  "deliberate",
+  "measured",
+  "steady",
+  "honestly",
+  "frankly",
+  "quietly",
+  "silently",
+  "significant",
+];
+
 // --- Section 2: Structure ---
 
 export const SUMMARY_OPENERS = [
@@ -103,6 +126,42 @@ export const TRANSITION_FILLERS = [
   "that said",
   "having said that",
   "in light of this",
+  "moreover",
+  "furthermore",
+  "in addition",
+  "on the other hand",
+];
+
+export const REVEAL_OPENERS = [
+  "honestly",
+  "frankly",
+  "genuinely",
+  "candidly",
+  "to be honest",
+  "let's be honest",
+  "I'll be direct",
+  "let me be clear",
+  "here's the thing",
+  "the truth is",
+  "the uncomfortable truth",
+  "what most people miss",
+  "the part nobody talks about",
+  "it turns out",
+];
+
+export const BUTTON_PHRASES = [
+  "and that changes everything",
+  "that's the point",
+  "which is exactly the problem",
+];
+
+export const ANSWER_LABELS = [
+  "the result",
+  "the catch",
+  "the kicker",
+  "here's where it gets interesting",
+  "enter",
+  "plot twist",
 ];
 
 export const HOLLYWOOD_ENDINGS = [
@@ -133,12 +192,14 @@ export const CHAT_RESIDUE = [
   "would you like me to continue",
   "certainly!",
   "of course!",
-];
-
-export const FALSE_INTIMACY = [
-  "here's the thing",
-  "let's be honest",
-  "the truth is",
+  "if you want, I can also",
+  "want me to turn this into a checklist",
+  "happy to adjust the tone",
+  "here's a clean version",
+  "here's a tight, no-fluff breakdown",
+  "short answer",
+  "bottom line",
+  "why this works",
 ];
 
 export const SYCOPHANTIC_OPENERS = [
@@ -147,6 +208,37 @@ export const SYCOPHANTIC_OPENERS = [
   "that's an excellent",
   "that's a great question",
   "what a great question",
+  "you're not imagining it",
+  "you're right to push back",
+  "great catch",
+  "you're absolutely right",
+  "I'm going to push back here",
+  "I'll be blunt",
+  "hot take",
+  "unpopular opinion",
+];
+
+export const DRAMA_WORDS = [
+  "deeply",
+  "truly",
+  "incredibly",
+  "fundamentally",
+  "profoundly",
+  "remarkably",
+  "meaningfully",
+];
+
+export const HOUSE_VOICE_PHRASES = [
+  "you've got this",
+  "you're closer than you think",
+  "that's a real win",
+  "let's lock it in",
+  "I find myself",
+  "this sits at the intersection of",
+  "the question underneath the question",
+  "there's a real tension here",
+  "it's worth naming",
+  "both things can be true",
 ];
 
 // --- Section 5: Content ---
@@ -180,4 +272,40 @@ export const SIGNIFICANCE_CLAIMS = [
   "shaping the evolving landscape",
   "marks a turning point",
   "ushering in a new era",
+  "plays a vital role",
+  "leaves a lasting impact",
+  "continues to captivate",
+  "this matters because",
+  "what matters more",
+  "the implications are significant",
+  "the stakes couldn't be higher",
+  "has drawn widespread attention",
+];
+
+export const OVERCORRECTION_WORDS = [
+  "harness",
+  "mosaic",
+  "patchwork",
+  "cornerstone",
+  "linchpin",
+  "bedrock",
+  "hallmark",
+  "elevate",
+  "amplify",
+  "supercharge",
+  "streamline",
+  "resonate",
+  "nuanced",
+  "holistic",
+  "ecosystem",
+  "realm",
+  "beacon",
+  "myriad",
+  "plethora",
+  "palpable",
+  "compelling",
+];
+
+export const OVERCORRECTION_PHRASES = [
+  "dig into",
 ];

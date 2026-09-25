@@ -28,7 +28,7 @@ const LLAMA_TELLS = [
 export const llamaProfile: ModelProfile = {
   id: "llama",
   label: "Llama",
-  promptOverlay: `MODEL-SPECIFIC PATTERNS — Llama
+  promptOverlay: `MODEL-SPECIFIC PATTERNS: LLAMA
 The following tells are especially common in Llama/Meta model output. Watch for them in addition to the general rules:
 - "It is essential to..." overly formal phrasing
 - "One must consider..." formal distancing from the reader

@@ -26,7 +26,7 @@ const GPT4_TELLS = [
 export const gpt4Profile: ModelProfile = {
   id: "gpt-4o",
   label: "GPT-4o",
-  promptOverlay: `MODEL-SPECIFIC PATTERNS — GPT-4o
+  promptOverlay: `MODEL-SPECIFIC PATTERNS: GPT-4O
 The following tells are especially common in GPT-4o output. Watch for them in addition to the general rules:
 - Overuse of "delve" and "explore" as verbs
 - "Let's explore..." as a section opener

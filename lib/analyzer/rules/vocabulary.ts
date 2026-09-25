@@ -6,6 +6,10 @@ import {
   MODERATE_SEVERITY_WORDS,
   PHRASE_LEVEL_TELLS,
   COPULA_SUBSTITUTES,
+  CURRENT_MODEL_WATCH_PHRASES,
+  CURRENT_MODEL_WATCH_WORDS,
+  OVERCORRECTION_PHRASES,
+  OVERCORRECTION_WORDS,
 } from "../word-lists";
 
 function escapeRegex(s: string): string {
@@ -93,6 +97,42 @@ export function checkVocabulary(text: string): Violation[] {
       "moderate",
       "1.2",
       'Copula avoidance (use "is" or "are" instead)'
+    )
+  );
+
+  // 1.3: Current-model watch list. These are weak signals on their own.
+  violations.push(
+    ...matchTerms(
+      text,
+      CURRENT_MODEL_WATCH_PHRASES,
+      "low",
+      "1.3",
+      "Current-model watch phrase"
+    ),
+    ...matchTerms(
+      text,
+      CURRENT_MODEL_WATCH_WORDS,
+      "low",
+      "1.3",
+      "Current-model watch word"
+    )
+  );
+
+  // 8.1: Common substitutes introduced by anti-slop editing.
+  violations.push(
+    ...matchTerms(
+      text,
+      OVERCORRECTION_PHRASES,
+      "low",
+      "8.1",
+      "Overcorrection phrase"
+    ),
+    ...matchTerms(
+      text,
+      OVERCORRECTION_WORDS,
+      "low",
+      "8.1",
+      "Overcorrection word"
     )
   );
 

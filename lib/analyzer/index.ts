@@ -7,6 +7,8 @@ import { checkTone } from "./rules/tone";
 import { checkFormatting } from "./rules/formatting";
 import { checkContent } from "./rules/content";
 import { checkConsistency } from "./rules/consistency";
+import { checkMannered } from "./rules/mannered";
+import { checkNarrative } from "./rules/narrative";
 import { getModelProfile } from "./models";
 
 export type { AnalysisResult, AnalyzeOptions, Violation } from "./types";
@@ -23,7 +25,12 @@ export function analyze(
     ...checkFormatting(text),
     ...checkContent(text),
     ...checkConsistency(text),
+    ...checkMannered(text),
   ];
+
+  if (options?.narrative) {
+    violations.push(...checkNarrative(text));
+  }
 
   // Apply model-specific checks if a model is specified
   if (options?.model) {
