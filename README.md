@@ -18,7 +18,7 @@ The site and the MCP server offer the prompt in three formats:
 
 | Format | Download | Use it for |
 | --- | --- | --- |
-| Rewrite prompt | `slopwash-prompt.md` | System prompt for chat apps and APIs. Send the text inside `<draft>` tags. |
+| Rewrite prompt | `slopwash-prompt.md` | For chat apps and APIs. Paste your text after it, in the same message or the next one. |
 | Agent skill | `SKILL.md` | An on-demand skill for coding agents. Loads only when invoked. |
 | Writing rules | `slopwash-rules.md` | Always-on rules for the agent's own prose. Adds about 8,000 tokens to every request. |
 
@@ -28,7 +28,7 @@ The site and the MCP server offer the prompt in three formats:
 2. Pick a format
 3. Add personas or narrative rules (optional)
 4. Copy or download the prompt
-5. For the rewrite prompt, set it as the system instruction and put the text inside `<draft>` and `</draft>` tags
+5. Paste the rewrite prompt into a chat, then paste your text below it or in the next message
 
 ### MCP server
 
@@ -187,7 +187,7 @@ The rewrite prompt is about 31,000 characters, which is too long for ChatGPT's C
 
 ### API
 
-Send the rewrite prompt as the system instruction and the source text inside `<draft>` tags. See [slopwash.com](https://slopwash.com#api-usage) for OpenAI Responses, Anthropic Messages, and Gemini Interactions examples, including hosted MCP calls that let the model audit its own rewrite.
+Send the rewrite prompt as the system instruction and the source text as the user message. In code, wrap the text in `<draft>` tags so the model edits any instructions inside it instead of following them. See [slopwash.com](https://slopwash.com#api-usage) for OpenAI Responses, Anthropic Messages, and Gemini Interactions examples, including hosted MCP calls that let the model audit its own rewrite.
 
 ## Slop scanner
 

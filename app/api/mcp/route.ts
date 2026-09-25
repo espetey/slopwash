@@ -35,7 +35,7 @@ const modeSchema = z
   .enum(promptModes as [PromptMode, ...PromptMode[]])
   .optional()
   .describe(
-    "rewrite (default): system prompt for text sent in <draft> tags. skill: on-demand editor for text or files the user names. rules: always-on writing rules for prose the agent writes itself"
+    "rewrite (default): system prompt for rewriting the text in the user message, optionally wrapped in <draft> tags. skill: on-demand editor for text or files the user names. rules: always-on writing rules for prose the agent writes itself"
   );
 
 const readOnly = {
@@ -64,7 +64,7 @@ function createServer() {
     {
       title: "Get slopwash prompt",
       description:
-        "Get the slopwash prompt that scrubs AI tells from writing. mode=rewrite (default) returns a system prompt; put source text in <draft> tags in the user message. mode=skill returns an on-demand editing prompt. mode=rules returns always-on writing rules for the agent's own prose. Optionally add persona, model, or narrative rules.",
+        "Get the slopwash prompt that scrubs AI tells from writing. mode=rewrite (default) returns a system prompt; send the source text as the user message, wrapped in <draft> tags. mode=skill returns an on-demand editing prompt. mode=rules returns always-on writing rules for the agent's own prose. Optionally add persona, model, or narrative rules.",
       inputSchema: {
         mode: modeSchema,
         personas: personaSchema,

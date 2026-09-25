@@ -109,7 +109,7 @@ const PROMPT_FORMATS: {
     label: "Rewrite prompt",
     filename: "slopwash-prompt.md",
     description:
-      "System prompt for chat apps and APIs. Send the text to clean inside <draft> tags.",
+      "For chat apps and APIs. Paste your text after it, in the same message or the next one.",
   },
   {
     id: "skill",
@@ -400,7 +400,7 @@ export default function Home() {
               <li>Pick a format: the rewrite prompt for chat and APIs, a skill for agents, or always-on writing rules</li>
               <li>Add personas for a specific voice, or narrative rules for stories and scenes (optional)</li>
               <li>Copy or download it</li>
-              <li>For the rewrite prompt, set it as the system instruction and send your text inside <span className="text-zinc-400 font-mono">&lt;draft&gt;...&lt;/draft&gt;</span> tags</li>
+              <li>Paste the rewrite prompt into a chat, then paste your text below it or in the next message</li>
             </ol>
             <p className="text-xs text-zinc-600 mt-2">
               Works with any current model, including GPT, Claude, Gemini, Llama, and Mistral.
@@ -594,8 +594,7 @@ export default function Home() {
           <p className="text-sm text-zinc-500 mb-4">
             The rewrite prompt is about 31,000 characters, more than most
             settings fields hold. Put it in a project or Gem, or connect the MCP
-            server. Then send your text inside{" "}
-            <span className="font-mono">&lt;draft&gt;</span> tags.
+            server. Then paste the text you want cleaned.
           </p>
 
           <div className="space-y-4">
@@ -643,7 +642,7 @@ export default function Home() {
             <Disclosure title="Any other chat">
               <p className="text-xs text-zinc-500">
                 Paste the prompt at the start of a new conversation, followed by
-                your text in <span className="font-mono">&lt;draft&gt;</span> tags.
+                your text.
               </p>
             </Disclosure>
           </div>
@@ -656,9 +655,10 @@ export default function Home() {
           </h2>
           <p className="text-sm text-zinc-500 mb-4">
             Send the rewrite prompt as the system instruction and the source
-            text in <span className="font-mono">&lt;draft&gt;</span> tags. The
-            examples load the downloaded file and use this helper, which escapes
-            any draft tags already in the text:
+            text as the user message. In code, wrap the text in{" "}
+            <span className="font-mono">&lt;draft&gt;</span> tags so the model
+            edits any instructions inside it instead of following them. The
+            examples load the downloaded file and use this helper:
           </p>
           <CodeBlock>{`import re
 
@@ -783,7 +783,7 @@ message = client.beta.messages.create(
           <ul className="text-sm text-zinc-500 space-y-2">
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
-              <span>Put the rewrite prompt in the system message and the source in <span className="font-mono">&lt;draft&gt;</span> tags in the user message.</span>
+              <span>In chat, paste the prompt and then your text. In code, send the prompt as the system message and wrap the text in <span className="font-mono">&lt;draft&gt;</span> tags; <span className="font-mono">prepare_rewrite</span> does this for you.</span>
             </li>
             <li className="flex gap-2">
               <span className="text-teal-500/60 shrink-0">&bull;</span>
