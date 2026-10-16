@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect, type ReactNode } from "react"
 import Image from "next/image";
 import { personas } from "@/lib/personas";
 import { buildPrompt, SKILL_FRONTMATTER, type PromptMode } from "@/lib/prompt";
+import HeroDemo from "./_components/hero-demo";
 
 const MCP_URL = "https://slopwash.com/api/mcp";
 
@@ -240,6 +241,8 @@ export default function Home() {
 
       {/* Main */}
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 pb-20">
+        <HeroDemo />
+
         {/* Format selector */}
         <section className="mb-6">
           <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3">
