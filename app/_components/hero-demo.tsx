@@ -15,6 +15,16 @@ interface ScoreResult {
   categories: Category[];
 }
 
+interface RewriteResult {
+  rewrite: string;
+  score_before: number;
+  score_after: number;
+  model: string;
+  usage: { input_tokens: number; output_tokens: number };
+}
+
+type Tab = "score" | "rewrite";
+
 function scoreColor(score: number): string {
   if (score >= 80) return "text-green-400";
   if (score >= 60) return "text-yellow-400";
@@ -29,21 +39,33 @@ function calibrationLabel(score: number): string {
   return "Slop — full rewrite needed";
 }
 
+const TEXT_LIMITS: Record<Tab, number> = { score: 50000, rewrite: 10000 };
+
 export default function HeroDemo() {
+  const [tab, setTab] = useState<Tab>("score");
   const [text, setText] = useState("");
-  const [result, setResult] = useState<ScoreResult | null>(null);
+  const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
+  const [rewriteResult, setRewriteResult] = useState<RewriteResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const handleScore = useCallback(async () => {
+  const switchTab = useCallback((next: Tab) => {
+    setTab(next);
+    setError(null);
+    setCopied(false);
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
     if (!text.trim() || loading) return;
     setLoading(true);
     setError(null);
     setCopied(false);
+    const endpoint = tab === "score" ? "/api/score" : "/api/rewrite";
+    const limit = TEXT_LIMITS[tab];
     try {
-      const res = await fetch("/api/score", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
@@ -51,39 +73,60 @@ export default function HeroDemo() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 429) {
-          setError("Rate limit reached — wait a bit and try again.");
+          setError(
+            tab === "score"
+              ? "Rate limit reached — wait a bit and try again."
+              : "Rewrite rate limit reached (20/hour) — wait a bit and try again."
+          );
         } else if (res.status === 413) {
-          setError("That text is too long — keep it under 50,000 characters.");
+          setError(
+            `That text is too long — keep it under ${limit.toLocaleString()} characters.`
+          );
+        } else if (res.status === 502) {
+          setError(
+            typeof data?.error === "string"
+              ? data.error
+              : "The rewrite service had a problem. Try again."
+          );
         } else {
           setError(
             typeof data?.error === "string"
               ? data.error
-              : "Something went wrong scoring that text."
+              : tab === "score"
+                ? "Something went wrong scoring that text."
+                : "Something went wrong rewriting that text."
           );
         }
-        setResult(null);
+        if (tab === "score") setScoreResult(null);
+        else setRewriteResult(null);
         return;
       }
-      setResult(data as ScoreResult);
+      if (tab === "score") setScoreResult(data as ScoreResult);
+      else setRewriteResult(data as RewriteResult);
     } catch {
-      setError("Could not reach the scoring API. Check your connection.");
-      setResult(null);
+      setError(
+        tab === "score"
+          ? "Could not reach the scoring API. Check your connection."
+          : "Could not reach the rewrite API. Check your connection."
+      );
+      if (tab === "score") setScoreResult(null);
+      else setRewriteResult(null);
     } finally {
       setLoading(false);
     }
-  }, [text, loading]);
+  }, [text, loading, tab]);
 
-  const handleCopy = useCallback(async () => {
-    if (!result) return;
+  const handleCopyScore = useCallback(async () => {
+    if (!scoreResult) return;
     const lines = [
-      `Slopwash score: ${result.score}/100 — ${calibrationLabel(result.score)}`,
-      `Words: ${result.word_count}`,
+      `Slopwash score: ${scoreResult.score}/100 — ${calibrationLabel(scoreResult.score)}`,
+      `Words: ${scoreResult.word_count}`,
     ];
-    if (result.categories.length === 0) {
+    if (scoreResult.categories.length === 0) {
       lines.push("No AI-tell categories flagged.");
     } else {
       lines.push("Flagged categories:");
-      for (const c of result.categories) {
+      for (const c of scoreResult.categories) {
         lines.push(`- ${c.label} (-${c.deduction})`);
       }
     }
@@ -94,16 +137,37 @@ export default function HeroDemo() {
     } catch {
       setError("Copy failed — your browser blocked clipboard access.");
     }
-  }, [result]);
+  }, [scoreResult]);
+
+  const handleCopyRewrite = useCallback(async () => {
+    if (!rewriteResult) return;
+    const lines = [
+      `Slopwash rewrite: ${rewriteResult.score_before} → ${rewriteResult.score_after}`,
+      "",
+      rewriteResult.rewrite,
+    ];
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError("Copy failed — your browser blocked clipboard access.");
+    }
+  }, [rewriteResult]);
+
+  const limit = TEXT_LIMITS[tab];
+  const wordCount = text.trim()
+    ? text.split(/\s+/).filter(Boolean).length
+    : 0;
 
   return (
     <section
-      aria-label="Try the slop score"
+      aria-label="Try the slop score and rewrite"
       className="mb-10 rounded-xl border border-zinc-800 bg-zinc-950 p-5 sm:p-6"
     >
       <div className="flex items-baseline justify-between gap-4 flex-wrap">
         <h2 className="text-lg font-semibold text-zinc-100">
-          Try it — paste text, get a slop score
+          Try it — paste text, score it, wash it
         </h2>
         <a
           href="/scanner"
@@ -113,33 +177,65 @@ export default function HeroDemo() {
         </a>
       </div>
 
+      <div
+        role="tablist"
+        aria-label="Demo mode"
+        className="mt-4 inline-flex rounded-lg border border-zinc-800 bg-zinc-900/60 p-1"
+      >
+        {(["score", "rewrite"] as Tab[]).map((t) => (
+          <button
+            key={t}
+            role="tab"
+            aria-selected={tab === t}
+            type="button"
+            onClick={() => switchTab(t)}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
+              tab === t
+                ? "bg-zinc-800 text-zinc-100"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            {t === "score" ? "Score" : "Rewrite"}
+          </button>
+        ))}
+      </div>
+
       <div className="mt-4 flex flex-col gap-3">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Paste a paragraph or two of text…"
+          placeholder={
+            tab === "score"
+              ? "Paste a paragraph or two of text…"
+              : "Paste text with AI tells and get a washed rewrite…"
+          }
           rows={5}
-          maxLength={50000}
+          maxLength={limit}
           className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 text-sm text-zinc-200 p-4 leading-relaxed placeholder:text-zinc-600 focus:border-teal-500/50 focus:outline-none resize-y transition-colors"
         />
         <div className="flex items-center gap-3 flex-wrap">
           <button
             type="button"
-            onClick={handleScore}
+            onClick={handleSubmit}
             disabled={!text.trim() || loading}
             className="px-6 py-2 rounded-lg text-sm font-medium bg-teal-600 text-white hover:bg-teal-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
-            {loading ? "Scoring…" : "Score it"}
+            {loading
+              ? tab === "score"
+                ? "Scoring…"
+                : "Rewriting…"
+              : tab === "score"
+                ? "Score it"
+                : "Rewrite it"}
           </button>
           <p className="text-xs text-zinc-600">
-            {text.trim()
-              ? `${text.split(/\s+/).filter(Boolean).length} words`
-              : "No text entered"}
+            {text.trim() ? `${wordCount} words` : "No text entered"}
           </p>
         </div>
         <p className="text-[11px] text-zinc-600">
-          Text is scored in memory and never stored. The API enforces per-IP
-          rate limits.
+          Text is processed in memory and never stored. The API enforces
+          per-IP rate limits
+          {tab === "rewrite" ? " (20 rewrites/hour)" : ""}.
         </p>
       </div>
 
@@ -149,37 +245,39 @@ export default function HeroDemo() {
         </p>
       )}
 
-      {result && (
+      {tab === "score" && scoreResult && (
         <div className="mt-5 border-t border-zinc-800 pt-5">
           <div className="flex items-center gap-5 flex-wrap">
             <div className="text-center">
-              <div className={`text-5xl font-bold ${scoreColor(result.score)}`}>
-                {result.score}
+              <div
+                className={`text-5xl font-bold ${scoreColor(scoreResult.score)}`}
+              >
+                {scoreResult.score}
               </div>
               <div className="text-xs text-zinc-500 mt-1">/ 100</div>
             </div>
             <div className="flex-1 min-w-[200px]">
               <p className="text-sm text-zinc-300">
-                {calibrationLabel(result.score)}
+                {calibrationLabel(scoreResult.score)}
               </p>
               <p className="text-xs text-zinc-500 mt-1">
-                {result.word_count} words &middot;{" "}
-                {result.categories.length} categor
-                {result.categories.length === 1 ? "y" : "ies"} flagged
+                {scoreResult.word_count} words &middot;{" "}
+                {scoreResult.categories.length} categor
+                {scoreResult.categories.length === 1 ? "y" : "ies"} flagged
               </p>
             </div>
             <button
               type="button"
-              onClick={handleCopy}
+              onClick={handleCopyScore}
               className="px-4 py-1.5 rounded-lg text-xs font-medium border border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-zinc-100 transition-colors cursor-pointer"
             >
               {copied ? "Copied!" : "Copy results"}
             </button>
           </div>
 
-          {result.categories.length > 0 && (
+          {scoreResult.categories.length > 0 && (
             <div className="mt-4 rounded-lg border border-zinc-800 divide-y divide-zinc-800">
-              {result.categories.map((c) => {
+              {scoreResult.categories.map((c) => {
                 const isOpen = expanded === c.id;
                 return (
                   <div key={c.id}>
@@ -227,6 +325,45 @@ export default function HeroDemo() {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {tab === "rewrite" && rewriteResult && (
+        <div className="mt-5 border-t border-zinc-800 pt-5">
+          <div className="flex items-center gap-5 flex-wrap">
+            <div className="text-4xl font-bold tracking-tight">
+              <span className={scoreColor(rewriteResult.score_before)}>
+                {rewriteResult.score_before}
+              </span>
+              <span className="text-zinc-600 mx-2">&rarr;</span>
+              <span className={scoreColor(rewriteResult.score_after)}>
+                {rewriteResult.score_after}
+              </span>
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <p className="text-sm text-zinc-300">
+                {calibrationLabel(rewriteResult.score_after)}
+              </p>
+              <p className="text-xs text-zinc-500 mt-1">
+                Rewritten with {rewriteResult.model} &middot;{" "}
+                {rewriteResult.usage.input_tokens + rewriteResult.usage.output_tokens}{" "}
+                tokens
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyRewrite}
+              className="px-4 py-1.5 rounded-lg text-xs font-medium border border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-zinc-100 transition-colors cursor-pointer"
+            >
+              {copied ? "Copied!" : "Copy rewrite"}
+            </button>
+          </div>
+
+          <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
+            <p className="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap">
+              {rewriteResult.rewrite}
+            </p>
+          </div>
         </div>
       )}
     </section>
