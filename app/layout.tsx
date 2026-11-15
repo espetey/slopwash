@@ -7,9 +7,9 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
     metadataBase: new URL("https://slopwash.com"),
-    title: "slopwash — scrub AI from your writing",
+    title: "slopwash — AI writing quality checker and editorial QA",
     description:
-        "A prompt that removes AI-generated writing patterns from any text. Copy it, paste it into your LLM, and get human-sounding output. Also available as an MCP server.",
+        "Slopwash scores AI-assisted writing against a published standard for AI writing patterns, names what fails, and rewrites it clean. Free scanner and prompt, org voice checks and corpus reports for teams, and a $249 editorial audit.",
     authors: [{ name: "Slopwash.com" }],
     icons: {
         icon: [
@@ -18,16 +18,16 @@ export const metadata: Metadata = {
         apple: "/slopwash-icon.png",
     },
     openGraph: {
-        title: "slopwash",
-        description: "A free prompt that scrubs AI tells from any text. Copy it, paste it into your LLM, and get output that reads like a human wrote it.",
+        title: "slopwash — the quality layer for AI-assisted writing",
+        description: "Score AI-assisted writing against a published standard, inspect every finding, and revise with the patterns named. Free analysis, team checks, and editorial audits.",
         type: "website",
         url: "https://slopwash.com",
         images: [{ url: "/slopwash-dark-sm.png" }],
     },
     twitter: {
         card: "summary_large_image",
-        title: "slopwash",
-        description: "A free prompt that scrubs AI tells from any text. Copy it, paste it into your LLM, and get output that reads like a human wrote it.",
+        title: "slopwash — the quality layer for AI-assisted writing",
+        description: "Score AI-assisted writing against a published standard, inspect every finding, and revise with the patterns named. Free analysis, team checks, and editorial audits.",
         images: ["/slopwash-dark-md.png"],
     },
 };

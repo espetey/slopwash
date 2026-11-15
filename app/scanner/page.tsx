@@ -145,15 +145,21 @@ export default function ScannerPage() {
                 </p>
                 <p className="text-xs text-zinc-600 mt-1">
                   {result.score >= 80
-                    ? "Clean — minimal AI patterns detected"
+                    ? "Low pattern density — few flagged patterns"
                     : result.score >= 60
-                      ? "Some AI tells present — could use a pass"
+                      ? "Some patterns flagged — a pass is worth it"
                       : result.score >= 40
-                        ? "Noticeable AI patterns — rewrite recommended"
-                        : "Heavy AI patterning — full rewrite needed"}
+                        ? "Patterns appear throughout — a rewrite is recommended"
+                        : "Heavy pattern density — patterns dominate the text"}
                 </p>
               </div>
             </div>
+
+            <p className="text-xs text-zinc-600 px-1">
+              The scanner measures pattern density against the standard. A
+              score does not determine whether a human or an AI wrote the
+              text, and a higher score does not guarantee better writing.
+            </p>
 
             {/* Section breakdown */}
             <div className="rounded-xl border border-zinc-800 bg-zinc-950 divide-y divide-zinc-800">
@@ -243,6 +249,8 @@ export default function ScannerPage() {
         <a href="https://github.com/espetey/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">GitHub</a>
         {" "}&middot;{" "}
         <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">@slopwash</a>
+        {" "}&middot;{" "}
+        <a href="/privacy" className="hover:text-zinc-400 transition-colors">Data handling</a>
       </footer>
     </div>
   );

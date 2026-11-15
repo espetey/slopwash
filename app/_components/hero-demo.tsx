@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { track } from "@vercel/analytics";
 
 interface Category {
   id: string;
@@ -33,10 +34,91 @@ function scoreColor(score: number): string {
 }
 
 function calibrationLabel(score: number): string {
-  if (score >= 90) return "Clean — minimal AI patterns detected";
-  if (score >= 70) return "Light tells — could use a pass";
-  if (score >= 50) return "Obvious AI texture — rewrite recommended";
-  return "Slop — full rewrite needed";
+  if (score >= 90)
+    return "Minimal pattern density — patterns from the standard barely appear";
+  if (score >= 70)
+    return "Light pattern density — a revision pass is worth it";
+  if (score >= 50)
+    return "Moderate pattern density — patterns appear throughout";
+  return "Heavy pattern density — patterns dominate the text";
+}
+
+const EXAMPLE_TEXT =
+  "In today's rapidly evolving digital landscape, organizations must leverage innovative solutions to unlock their full potential and drive meaningful results. By harnessing the power of cutting-edge technology, teams can streamline workflows, enhance collaboration, and foster a culture of continuous improvement. It is important to note that success is not just about adopting new tools, but also about embracing a mindset of growth. Furthermore, businesses that prioritize innovation are better positioned to navigate challenges and seize new opportunities in an ever-changing marketplace.";
+
+function HighlightedText({
+  text,
+  evidence,
+}: {
+  text: string;
+  evidence: string[];
+}) {
+  const terms = [
+    ...new Set(evidence.map((e) => e.trim()).filter((e) => e.length >= 3)),
+  ].sort((a, b) => b.length - a.length);
+  if (terms.length === 0) return <>{text}</>;
+  const pattern = new RegExp(
+    `(${terms
+      .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("|")})`,
+    "gi"
+  );
+  const parts = text.split(pattern);
+  return (
+    <>
+      {parts.map((part, i) =>
+        terms.some((t) => t.toLowerCase() === part.toLowerCase()) ? (
+          <span
+            key={i}
+            className="bg-red-500/15 text-red-200 rounded px-0.5"
+          >
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
+
+function diffWordIndices(
+  a: string[],
+  b: string[]
+): { aChanged: Set<number>; bChanged: Set<number> } {
+  const aChanged = new Set<number>();
+  const bChanged = new Set<number>();
+  if (a.length * b.length > 250000) return { aChanged, bChanged };
+  const n = a.length;
+  const m = b.length;
+  const dp: number[][] = Array.from({ length: n + 1 }, () =>
+    new Array(m + 1).fill(0)
+  );
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i][j] =
+        a[i] === b[j]
+          ? dp[i + 1][j + 1] + 1
+          : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  let i = 0;
+  let j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) {
+      i++;
+      j++;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      aChanged.add(i);
+      i++;
+    } else {
+      bChanged.add(j);
+      j++;
+    }
+  }
+  while (i < n) aChanged.add(i++);
+  while (j < m) bChanged.add(j++);
+  return { aChanged, bChanged };
 }
 
 const TEXT_LIMITS: Record<Tab, number> = { score: 50000, rewrite: 10000 };
@@ -50,6 +132,9 @@ export default function HeroDemo() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [scoredText, setScoredText] = useState("");
+  const [rewriteSource, setRewriteSource] = useState("");
+  const [isExample, setIsExample] = useState(false);
 
   const switchTab = useCallback((next: Tab) => {
     setTab(next);
@@ -101,8 +186,15 @@ export default function HeroDemo() {
         else setRewriteResult(null);
         return;
       }
-      if (tab === "score") setScoreResult(data as ScoreResult);
-      else setRewriteResult(data as RewriteResult);
+      if (tab === "score") {
+        setScoreResult(data as ScoreResult);
+        setScoredText(text);
+        track("demo_scan_completed");
+      } else {
+        setRewriteResult(data as RewriteResult);
+        setRewriteSource(text);
+        track("demo_rewrite_completed");
+      }
     } catch {
       setError(
         tab === "score"
@@ -133,6 +225,7 @@ export default function HeroDemo() {
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
       setCopied(true);
+      track("demo_result_copied");
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setError("Copy failed — your browser blocked clipboard access.");
@@ -149,6 +242,7 @@ export default function HeroDemo() {
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
       setCopied(true);
+      track("demo_rewrite_copied");
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setError("Copy failed — your browser blocked clipboard access.");
@@ -203,7 +297,10 @@ export default function HeroDemo() {
       <div className="mt-4 flex flex-col gap-3">
         <textarea
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            setIsExample(false);
+          }}
           placeholder={
             tab === "score"
               ? "Paste a paragraph or two of text…"
@@ -231,11 +328,34 @@ export default function HeroDemo() {
           <p className="text-xs text-zinc-600">
             {text.trim() ? `${wordCount} words` : "No text entered"}
           </p>
+          <button
+            type="button"
+            onClick={() => {
+              setText(EXAMPLE_TEXT);
+              setIsExample(true);
+            }}
+            className="px-4 py-2 rounded-lg text-sm font-medium border border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-zinc-100 transition-colors cursor-pointer"
+          >
+            Try an example
+          </button>
         </div>
+        {isExample && (
+          <p className="text-[11px] text-teal-300/70">
+            Example text, written to show the patterns the standard flags.
+          </p>
+        )}
         <p className="text-[11px] text-zinc-600">
-          Text is processed in memory and never stored. The API enforces
-          per-IP rate limits
-          {tab === "rewrite" ? " (20 rewrites/hour)" : ""}.
+          On this demo, text is processed in memory and never stored. The API
+          enforces per-IP rate limits
+          {tab === "rewrite" ? " (20 rewrites/hour)" : ""}. Keyed API calls
+          and team workspaces handle text differently:{" "}
+          <a
+            href="/privacy"
+            className="underline underline-offset-2 hover:text-zinc-400 transition-colors"
+          >
+            how each path handles text
+          </a>
+          .
         </p>
       </div>
 
@@ -325,6 +445,26 @@ export default function HeroDemo() {
               })}
             </div>
           )}
+
+          {scoredText &&
+            scoredText.length <= 6000 &&
+            scoreResult.categories.length > 0 && (
+              <div className="mt-4">
+                <p className="text-xs text-zinc-500 mb-2">
+                  Where the patterns are:
+                </p>
+                <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4 max-h-64 overflow-auto">
+                  <p className="text-sm text-zinc-400 leading-relaxed whitespace-pre-wrap">
+                    <HighlightedText
+                      text={scoredText}
+                      evidence={scoreResult.categories.flatMap(
+                        (c) => c.evidence
+                      )}
+                    />
+                  </p>
+                </div>
+              </div>
+            )}
         </div>
       )}
 
@@ -359,11 +499,61 @@ export default function HeroDemo() {
             </button>
           </div>
 
-          <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
-            <p className="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap">
-              {rewriteResult.rewrite}
-            </p>
-          </div>
+          {(() => {
+            const aWords = rewriteSource.split(/\s+/).filter(Boolean);
+            const bWords = rewriteResult.rewrite
+              .split(/\s+/)
+              .filter(Boolean);
+            const { aChanged, bChanged } = diffWordIndices(aWords, bWords);
+            return (
+              <>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
+                    <p className="text-[11px] uppercase tracking-widest text-zinc-500 mb-2">
+                      Original
+                    </p>
+                    <p className="text-sm text-zinc-400 leading-relaxed">
+                      {aWords.map((w, i) => (
+                        <span
+                          key={i}
+                          className={
+                            aChanged.has(i)
+                              ? "bg-red-500/15 text-red-200 rounded px-0.5"
+                              : undefined
+                          }
+                        >
+                          {w}{" "}
+                        </span>
+                      ))}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4">
+                    <p className="text-[11px] uppercase tracking-widest text-zinc-500 mb-2">
+                      Rewrite — changed passages marked
+                    </p>
+                    <p className="text-sm text-zinc-200 leading-relaxed">
+                      {bWords.map((w, i) => (
+                        <span
+                          key={i}
+                          className={
+                            bChanged.has(i)
+                              ? "bg-teal-500/15 text-teal-200 rounded px-0.5"
+                              : undefined
+                          }
+                        >
+                          {w}{" "}
+                        </span>
+                      ))}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-[11px] text-zinc-600 mt-3">
+                  Read the rewrite before you use it. A change can alter
+                  meaning, and the check for that is yours.
+                </p>
+              </>
+            );
+          })()}
         </div>
       )}
     </section>
