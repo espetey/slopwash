@@ -9,8 +9,22 @@ import {
   type PromptMode,
 } from "@/lib/prompt";
 import { auditRewrite } from "@/lib/rewrite-audit";
-import { analyze } from "@/lib/analyzer";
+import {
+  analyze,
+  ANALYZER_VERSION,
+  RULESET_VERSION,
+} from "@/lib/analyzer";
 import { modelIds } from "@/lib/analyzer/models";
+import { isDbConfigured } from "@/lib/db";
+import { findKeyByPlaintext } from "@/lib/api/keys";
+import { logUsageEvent } from "@/lib/api/metering";
+import { checkWithSpec } from "@/lib/org-spec/check";
+import {
+  getLatestSpec,
+  getOrg,
+  getSpecVersion,
+  recordCheckRun,
+} from "@/lib/org-spec/store";
 
 const personaSchema = z
   .array(z.enum(personaIds as [string, ...string[]]))
@@ -53,7 +67,18 @@ function parsePersonaList(value?: string): string[] | undefined {
   return ids.length > 0 ? ids : undefined;
 }
 
-function createServer() {
+function extractKeyHeader(headers: Headers): string | null {
+  const auth = headers.get("authorization");
+  if (auth && auth.toLowerCase().startsWith("bearer ")) {
+    const token = auth.slice(7).trim();
+    if (token) return token;
+  }
+  const apiKey = headers.get("x-api-key");
+  if (apiKey && apiKey.trim()) return apiKey.trim();
+  return null;
+}
+
+function createServer(requestHeaders?: Headers) {
   const server = new McpServer({
     name: "slopwash",
     version: "1.1.0",
@@ -145,17 +170,25 @@ function createServer() {
     {
       title: "Analyze text",
       description:
-        "Analyze text for AI writing patterns (slop) without rewriting it. Returns a score (0-100, higher is better), section-by-section breakdown, and a list of specific violations found. No LLM is called. Enable narrative for stories, scenes, or narrative nonfiction.",
+        "Analyze text for AI writing patterns (slop) without rewriting it. Returns a score (0-100, higher is better), section-by-section breakdown, and a list of specific violations found. No LLM is called. Enable narrative for stories, scenes, or narrative nonfiction. When the MCP request carries an API key bound to an org, the read also runs against the org's spec and the summary names the spec version; without a key it runs against the universal ruleset only.",
       inputSchema: {
         text: z
           .string()
           .describe("The text to analyze for AI writing patterns"),
         model: modelSchema,
         narrative: narrativeSchema,
+        spec_version: z
+          .number()
+          .int()
+          .positive()
+          .optional()
+          .describe(
+            "Optional org spec version to read against. Default: the org's latest version. Only applies when the request carries an org key."
+          ),
       },
       annotations: readOnly,
     },
-    async ({ text, model, narrative }) => {
+    async ({ text, model, narrative, spec_version }) => {
       const result = analyze(text, { model, narrative });
 
       const sectionLines = result.sections
@@ -173,6 +206,74 @@ function createServer() {
         )
         .join("\n");
 
+      // Item D1: an org key on the MCP request runs the org read and
+      // the summary names the spec version. No key (or a key the
+      // store does not accept) runs the universal read, and the
+      // summary says so.
+      let orgLines: string[] = [
+        "Read against the universal ruleset only (no org spec applied).",
+      ];
+      const keyPlaintext = requestHeaders
+        ? extractKeyHeader(requestHeaders)
+        : null;
+      if (keyPlaintext && isDbConfigured()) {
+        try {
+          const key = await findKeyByPlaintext(keyPlaintext);
+          if (key && !key.revoked_at && key.org_id) {
+            const specRow =
+              spec_version !== undefined
+                ? await getSpecVersion(key.org_id, spec_version)
+                : await getLatestSpec(key.org_id);
+            if (specRow) {
+              const org = await getOrg(key.org_id);
+              const orgCheck = checkWithSpec(text, specRow.spec, {
+                model,
+                narrative,
+              });
+              const termLines = orgCheck.org.termFindings
+                .slice(0, 20)
+                .map(
+                  (v) =>
+                    `  [${v.severity}] ${v.message} — "${v.match.length > 50 ? v.match.slice(0, 50) + "..." : v.match}"`
+                )
+                .join("\n");
+              orgLines = [
+                `Org spec: ${org?.name ?? key.org_id}, spec version ${specRow.version} (analyzer ${ANALYZER_VERSION}, ruleset ${RULESET_VERSION}).`,
+                `Org view score: ${orgCheck.org.score}/100 | Org findings: ${orgCheck.org.violations.length} rule findings, ${orgCheck.org.termFindings.length} term findings`,
+                ...(termLines ? [``, `Org term findings:`, termLines] : []),
+              ];
+              await recordCheckRun({
+                orgId: key.org_id,
+                keyId: key.id,
+                specVersion: specRow.version,
+                surface: "mcp",
+                text,
+                result: orgCheck,
+              }).catch(() => undefined);
+              await logUsageEvent({
+                keyId: key.id,
+                endpoint: "score",
+                inputChars: text.length,
+                orgId: key.org_id,
+                specVersion: specRow.version,
+              }).catch(() => undefined);
+            } else if (spec_version !== undefined) {
+              orgLines = [
+                `This org has no spec version ${spec_version}. Read ran against the universal ruleset only.`,
+              ];
+            }
+          } else if (keyPlaintext) {
+            orgLines = [
+              "The API key was not accepted. Read ran against the universal ruleset only.",
+            ];
+          }
+        } catch {
+          orgLines = [
+            "The org spec store is unavailable. Read ran against the universal ruleset only.",
+          ];
+        }
+      }
+
       const summary = [
         `Score: ${result.score}/100`,
         `Words: ${result.wordCount} | Sentences: ${result.sentenceCount} | Violations: ${result.violations.length}`,
@@ -182,6 +283,8 @@ function createServer() {
         ``,
         `Top violations:`,
         topViolations || "  (none)",
+        ``,
+        ...orgLines,
       ].join("\n");
 
       return {
@@ -251,7 +354,7 @@ function createTransport() {
 }
 
 export async function POST(req: Request) {
-  const server = createServer();
+  const server = createServer(req.headers);
   const transport = createTransport();
 
   await server.connect(transport);
@@ -260,7 +363,7 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-  const server = createServer();
+  const server = createServer(req.headers);
   const transport = createTransport();
 
   await server.connect(transport);
@@ -269,7 +372,7 @@ export async function GET(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const server = createServer();
+  const server = createServer(req.headers);
   const transport = createTransport();
 
   await server.connect(transport);

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { analyze } from "@/lib/analyzer";
+import {
+  analyze,
+  ANALYZER_VERSION,
+  RULESET_VERSION,
+} from "@/lib/analyzer";
 import type { Violation } from "@/lib/analyzer";
 import {
   applyRateHeaders,
@@ -8,6 +12,13 @@ import {
   type KeyContext,
 } from "@/lib/api/auth";
 import { logUsageEvent } from "@/lib/api/metering";
+import { checkWithSpec } from "@/lib/org-spec/check";
+import {
+  getLatestSpec,
+  getSpecVersion,
+  recordCheckRun,
+  type SpecVersionRow,
+} from "@/lib/org-spec/store";
 
 /**
  * POST /api/score — deterministic (Layer A) slop score.
@@ -201,21 +212,81 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const model = typeof opts.model === "string" ? opts.model : undefined;
   const narrative = opts.narrative === true;
 
+  // Item D1: a key bound to an org runs the org check. The route
+  // accepts an optional spec_version (default: the org's latest).
+  // A named version that does not exist is a 404. An org with no
+  // spec versions yet returns the standard response below.
+  let specRow: SpecVersionRow | null = null;
+  if (keyContext?.key.org_id) {
+    const orgId = keyContext.key.org_id;
+    const requestedVersion =
+      typeof opts.spec_version === "number" ? opts.spec_version : null;
+    try {
+      specRow =
+        requestedVersion !== null
+          ? await getSpecVersion(orgId, requestedVersion)
+          : await getLatestSpec(orgId);
+    } catch {
+      return NextResponse.json(
+        { error: "The org spec store is unavailable. Try again later." },
+        { status: 503 }
+      );
+    }
+    if (requestedVersion !== null && !specRow) {
+      return NextResponse.json(
+        {
+          error: `This org has no spec version ${requestedVersion}.`,
+        },
+        { status: 404 }
+      );
+    }
+  }
+
   const result = analyze(text, { model, narrative });
 
-  const response = NextResponse.json({
+  // The two version fields ride on every response, anonymous and
+  // keyed alike (build spec D1). All other fields are unchanged for
+  // anonymous and org-less keyed calls.
+  const payload: Record<string, unknown> = {
     score: result.score,
     word_count: result.wordCount,
     categories: buildCategories(result.violations),
-  });
+    analyzer_version: ANALYZER_VERSION,
+    ruleset_version: RULESET_VERSION,
+  };
+
+  let orgCheck: ReturnType<typeof checkWithSpec> | null = null;
+  if (keyContext && specRow) {
+    orgCheck = checkWithSpec(text, specRow.spec, { model, narrative });
+    payload.org_findings = {
+      org_score: orgCheck.org.score,
+      violations: orgCheck.org.violations,
+      term_findings: orgCheck.org.termFindings,
+      densities: orgCheck.densities.org,
+    };
+    payload.org_spec_version = specRow.version;
+  }
+
+  const response = NextResponse.json(payload);
 
   if (keyContext) {
     applyRateHeaders(response, keyContext);
+    if (orgCheck && specRow && keyContext.key.org_id) {
+      await recordCheckRun({
+        orgId: keyContext.key.org_id,
+        keyId: keyContext.key.id,
+        specVersion: specRow.version,
+        surface: "api",
+        text,
+        result: orgCheck,
+      }).catch(() => undefined);
+    }
     await logUsageEvent({
       keyId: keyContext.key.id,
       endpoint: "score",
       inputChars: text.length,
       orgId: keyContext.key.org_id,
+      specVersion: specRow?.version ?? null,
     }).catch(() => undefined);
   }
 

@@ -1,4 +1,10 @@
-import { analyze, severityWeightSum, type Violation } from "@/lib/analyzer";
+import {
+  analyze,
+  severityWeightSum,
+  ANALYZER_VERSION,
+  RULESET_VERSION,
+  type Violation,
+} from "@/lib/analyzer";
 import { checkWithSpec } from "@/lib/org-spec/check";
 import type { OrgSpec } from "@/lib/org-spec/types";
 import { termCheck } from "./term-check";
@@ -69,6 +75,8 @@ export function buildAuditReport(
     clientLabel: meta.clientLabel,
     sampleSource: meta.sampleSource,
     date: meta.date,
+    analyzerVersion: ANALYZER_VERSION,
+    rulesetVersion: RULESET_VERSION,
     spec,
     pieces: results,
     totals: {
@@ -99,6 +107,9 @@ export function renderAuditMarkdown(report: AuditReport): string {
   lines.push("");
   lines.push(`Date: ${report.date}`);
   lines.push(`Sample: ${report.sampleSource}`);
+  lines.push(
+    `Analyzer version: ${report.analyzerVersion}. Ruleset version: ${report.rulesetVersion}.`
+  );
   if (report.spec) {
     lines.push(
       `Org spec: ${report.spec.orgId}, version ${report.spec.version}. Findings of record are the org view; the universal score is printed as context.`
