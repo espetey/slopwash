@@ -166,6 +166,98 @@ export function applyRateHeaders(
   response.headers.set("X-Quota-Reset", String(context.quota.reset));
 }
 
+export type OrgKeyResult =
+  | { ok: true; key: ApiKeyRow }
+  | { ok: false; response: NextResponse };
+
+/**
+ * Gate for the org-bound surfaces (build spec D2). Unlike
+ * requireKeyOrAnon there is no anonymous path here: the request must
+ * carry a key, the key must belong to an org, and it must carry the
+ * named scope. Corpus reads carry no tier quota until Erik sets the
+ * allowances (decision D-3); the routes run for admin-issued keys
+ * with metering rows written per call.
+ */
+export async function requireOrgKey(
+  req: NextRequest,
+  scope: string
+): Promise<OrgKeyResult> {
+  const plaintext = extractKey(req);
+  if (!plaintext) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: "An API key is required for this route." },
+        { status: 401 }
+      ),
+    };
+  }
+  if (!isDbConfigured()) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        {
+          error:
+            "API keys are not configured on this deployment yet.",
+        },
+        { status: 503 }
+      ),
+    };
+  }
+  let key: ApiKeyRow | null;
+  try {
+    key = await findKeyByPlaintext(plaintext);
+  } catch {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: "The API key store is unavailable. Try again later." },
+        { status: 503 }
+      ),
+    };
+  }
+  if (!key) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: "Unknown API key." },
+        { status: 401 }
+      ),
+    };
+  }
+  if (key.revoked_at) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: "This API key has been revoked." },
+        { status: 403 }
+      ),
+    };
+  }
+  if (!key.org_id) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: "This API key is not bound to an org." },
+        { status: 403 }
+      ),
+    };
+  }
+  if (!key.scopes.includes(scope)) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        {
+          error: `This API key does not carry the ${scope} scope.`,
+        },
+        { status: 403 }
+      ),
+    };
+  }
+  void touchKeyLastUsed(key.id).catch(() => undefined);
+  return { ok: true, key };
+}
+
 /** Admin gate for issuance and org management: the ADMIN_SECRET env var. */
 export function requireAdmin(req: NextRequest): NextResponse | null {
   const secret = process.env.ADMIN_SECRET;

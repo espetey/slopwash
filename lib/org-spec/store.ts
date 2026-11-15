@@ -123,16 +123,17 @@ export async function updateOrgSettings(
 
 /**
  * Delete an org and everything stored under it, in one transaction:
- * spec versions, exemplars, and check runs are deleted; API keys keep
- * existing with their org link cleared (a key with no org behaves
- * exactly as item 3 specced). Corpus rows join this transaction in
- * Phase 2.
+ * spec versions, exemplars, check runs, corpus pieces, and corpus
+ * runs are deleted; API keys keep existing with their org link
+ * cleared (a key with no org behaves exactly as item 3 specced).
  */
 export async function deleteOrg(id: string): Promise<boolean> {
   const org = await getOrg(id);
   if (!org) return false;
   await withTransaction(async (client) => {
     await client.query("DELETE FROM check_runs WHERE org_id = $1", [id]);
+    await client.query("DELETE FROM corpus_runs WHERE org_id = $1", [id]);
+    await client.query("DELETE FROM corpus_pieces WHERE org_id = $1", [id]);
     await client.query("DELETE FROM org_spec_versions WHERE org_id = $1", [
       id,
     ]);

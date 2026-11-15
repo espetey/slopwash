@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/api/auth";
-import { createOrg, deleteOrg, listOrgs } from "@/lib/org-spec/store";
+import {
+  createOrg,
+  deleteOrg,
+  listOrgs,
+  updateOrgSettings,
+} from "@/lib/org-spec/store";
 
 /**
  * Admin org management (build spec B1). Admin-only, behind
@@ -46,6 +51,47 @@ export async function GET(req: NextRequest) {
   const denied = requireAdmin(req);
   if (denied) return denied;
   return NextResponse.json({ orgs: await listOrgs() });
+}
+
+/** Update org settings: retention_days (D-4) and embeddings_opt_out. */
+export async function PATCH(req: NextRequest) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
+
+  let body: Record<string, unknown>;
+  try {
+    body = (await req.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json(
+      { error: "Request body must be valid JSON." },
+      { status: 400 }
+    );
+  }
+  const id = typeof body.id === "string" ? body.id : "";
+  if (!id) {
+    return NextResponse.json(
+      { error: 'Request body must include the org "id" to update.' },
+      { status: 400 }
+    );
+  }
+  const retentionDays =
+    typeof body.retention_days === "number" && body.retention_days >= 0
+      ? Math.floor(body.retention_days)
+      : undefined;
+  const updated = await updateOrgSettings(id, {
+    retentionDays,
+    embeddingsOptOut:
+      typeof body.embeddings_opt_out === "boolean"
+        ? body.embeddings_opt_out
+        : undefined,
+  });
+  if (!updated) {
+    return NextResponse.json(
+      { error: "No org with that id." },
+      { status: 404 }
+    );
+  }
+  return NextResponse.json(updated);
 }
 
 export async function DELETE(req: NextRequest) {

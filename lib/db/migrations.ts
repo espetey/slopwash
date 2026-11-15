@@ -10,7 +10,7 @@ import { getPool } from "./index";
  *   0001  item 3a: api_keys, usage_events, flywheel_triples
  *   0002  build spec Phase 1 (B1): orgs, org_spec_versions,
  *         org_exemplars, check_runs
- * Corpus tables land with build spec Phase 2.
+ *   0003  build spec Phase 2 (C1): corpus_pieces, corpus_runs
  */
 
 export interface Migration {
@@ -114,6 +114,42 @@ CREATE TABLE IF NOT EXISTS check_runs (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS check_runs_org_created ON check_runs (org_id, created_at);
+`,
+  },
+  {
+    id: "0003_c1_corpus_pieces_runs",
+    sql: `
+CREATE TABLE IF NOT EXISTS corpus_pieces (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL REFERENCES orgs(id),
+  period text NOT NULL,
+  genre text NOT NULL,
+  title text,
+  source_url text,
+  text text NOT NULL,
+  text_hash text NOT NULL,
+  ingested_at timestamptz NOT NULL DEFAULT now(),
+  retention_until timestamptz NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS corpus_pieces_org_period_hash
+  ON corpus_pieces (org_id, period, text_hash);
+CREATE INDEX IF NOT EXISTS corpus_pieces_org_period_genre
+  ON corpus_pieces (org_id, period, genre);
+
+CREATE TABLE IF NOT EXISTS corpus_runs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL REFERENCES orgs(id),
+  period text NOT NULL,
+  genre text NOT NULL,
+  spec_version integer,
+  analyzer_version text NOT NULL,
+  embedder text NOT NULL DEFAULT 'none',
+  measures jsonb NOT NULL,
+  reading text NOT NULL,
+  floors jsonb NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS corpus_runs_org_genre ON corpus_runs (org_id, genre, created_at);
 `,
   },
 ];
