@@ -65,3 +65,26 @@ export function computeOverallScore(sections: SectionSummary[]): number {
   if (totalWeight === 0) return 100;
   return Math.round(clamp(weightedSum / totalWeight, 0, 100));
 }
+
+/** Severity-weighted hit count: high 5, moderate 3, low 1. */
+export function severityWeightSum(violations: Violation[]): number {
+  return violations.reduce(
+    (sum, v) => sum + (SEVERITY_COST[v.severity] ?? 1),
+    0
+  );
+}
+
+/**
+ * Rescore a violation list from scratch (build spec section 3). The org
+ * view drops disabled rules and remaps severities, then calls this so
+ * the org score is computed by the same code as the universal score.
+ * The universal score itself never passes through here with edits;
+ * analyze() output is returned untouched.
+ */
+export function rescoreViolations(violations: Violation[]): {
+  sections: SectionSummary[];
+  score: number;
+} {
+  const sections = computeSectionSummaries(violations);
+  return { sections, score: computeOverallScore(sections) };
+}

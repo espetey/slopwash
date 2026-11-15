@@ -1,6 +1,11 @@
 import type { AnalysisResult, AnalyzeOptions, Violation } from "./types";
 import { countWords, splitSentences } from "./utils";
-import { computeSectionSummaries, computeOverallScore } from "./scoring";
+import {
+  computeSectionSummaries,
+  computeOverallScore,
+} from "./scoring";
+
+export { rescoreViolations, severityWeightSum } from "./scoring";
 import { checkVocabulary } from "./rules/vocabulary";
 import { checkStructure } from "./rules/structure";
 import { checkTone } from "./rules/tone";

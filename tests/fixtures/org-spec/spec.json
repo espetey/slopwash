@@ -1,0 +1,15 @@
+{
+  "orgId": "fixture-org",
+  "version": 1,
+  "createdAt": "2026-11-14T00:00:00.000Z",
+  "note": "Fixture spec for the B0 acceptance check.",
+  "terms": {
+    "banned": [{ "term": "guarantee", "variants": "inflect" }],
+    "required": [{ "term": "warranty", "minPerPiece": 1 }],
+    "replacements": []
+  },
+  "rules": {
+    "disabled": ["4.1"],
+    "severityOverrides": {}
+  }
+}

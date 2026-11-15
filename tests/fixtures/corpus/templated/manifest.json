@@ -1,0 +1,172 @@
+{
+  "pieces": [
+    {
+      "file": "t01.txt",
+      "title": "Northwind Planner Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 287
+    },
+    {
+      "file": "t02.txt",
+      "title": "Fieldbook Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 276
+    },
+    {
+      "file": "t03.txt",
+      "title": "Cartloop Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 283
+    },
+    {
+      "file": "t04.txt",
+      "title": "Brightdesk Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 282
+    },
+    {
+      "file": "t05.txt",
+      "title": "Petal CRM Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 285
+    },
+    {
+      "file": "t06.txt",
+      "title": "Shipshape Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 279
+    },
+    {
+      "file": "t07.txt",
+      "title": "Ledgerly Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 278
+    },
+    {
+      "file": "t08.txt",
+      "title": "Campfire Docs Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 284
+    },
+    {
+      "file": "t09.txt",
+      "title": "Otto Inbox Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 287
+    },
+    {
+      "file": "t10.txt",
+      "title": "Meadow Metrics Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 284
+    },
+    {
+      "file": "t11.txt",
+      "title": "Parcelpath Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 279
+    },
+    {
+      "file": "t12.txt",
+      "title": "Kindling Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 281
+    },
+    {
+      "file": "t13.txt",
+      "title": "Roofline Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 278
+    },
+    {
+      "file": "t14.txt",
+      "title": "Tallyho Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 280
+    },
+    {
+      "file": "t15.txt",
+      "title": "Fernway Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 281
+    },
+    {
+      "file": "t16.txt",
+      "title": "Bluepine Boards Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 284
+    },
+    {
+      "file": "t17.txt",
+      "title": "Harborlight Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 280
+    },
+    {
+      "file": "t18.txt",
+      "title": "Stackline Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 282
+    },
+    {
+      "file": "t19.txt",
+      "title": "Willow Works Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 284
+    },
+    {
+      "file": "t20.txt",
+      "title": "Emberline Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 277
+    },
+    {
+      "file": "t21.txt",
+      "title": "Coppernote Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 279
+    },
+    {
+      "file": "t22.txt",
+      "title": "Draftwell Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 277
+    },
+    {
+      "file": "t23.txt",
+      "title": "Summitly Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 281
+    },
+    {
+      "file": "t24.txt",
+      "title": "Quietqueue Update: A Simpler Week for Your Team",
+      "genre": "blog post",
+      "period": "templated",
+      "words": 283
+    }
+  ]
+}

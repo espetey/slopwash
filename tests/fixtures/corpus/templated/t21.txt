@@ -1,0 +1,13 @@
+Coppernote Update: A Simpler Week for Your Team
+
+This week, our team shipped a new update for Coppernote. The update focuses on three things: custom fields, saved views, and audit history. Every change in this release came from a customer conversation, a support ticket, or a note from the field.
+
+We heard from customers in Raleigh who asked for clearer handoffs between shifts. The team read every request, grouped them by theme, and picked the work that helped the most people first. This release is not just faster, but also easier to learn, easier to share, and easier to trust.
+
+Coppernote now includes custom fields on every plan, so teams can track orders without extra steps. The update also adds saved views for admins and and audit history for everyone else on the team. Setup takes about five minutes, and your existing data stays right where it is.
+
+More than 5,100 teams tried the beta this month. They told us the new layout saved them about 22 percent of the time they used to spend on setup each week. The result is a calmer, clearer, and more predictable workflow for everyone, from the first login of the day to the last report of the week.
+
+The update is live now for all customers. Open Coppernote, look for the banner at the top of your home screen, and follow the short tour. If you run into anything that feels off, our support team answers within one business day.
+
+Try the new update today and tell us what you think. Your notes shape the next release, the same way they shaped this one. Thank you for building your week with Coppernote.
