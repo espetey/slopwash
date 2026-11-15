@@ -25,6 +25,14 @@ import {
   getSpecVersion,
   recordCheckRun,
 } from "@/lib/org-spec/store";
+import {
+  DuplicatePieceError,
+  ingestPiece,
+} from "@/lib/corpus/ingest";
+import { getRun, listRuns, runPeriod } from "@/lib/corpus/store";
+import { renderGenreReport } from "@/lib/corpus/report";
+import { GENRES } from "@/lib/corpus/genres";
+import type { ApiKeyRow } from "@/lib/api/keys";
 
 const personaSchema = z
   .array(z.enum(personaIds as [string, ...string[]]))
@@ -56,6 +64,13 @@ const readOnly = {
   readOnlyHint: true,
   destructiveHint: false,
   idempotentHint: true,
+  openWorldHint: false,
+};
+
+const mutating = {
+  readOnlyHint: false,
+  destructiveHint: false,
+  idempotentHint: false,
   openWorldHint: false,
 };
 
@@ -289,6 +304,179 @@ function createServer(requestHeaders?: Headers) {
 
       return {
         content: [{ type: "text" as const, text: summary }],
+      };
+    }
+  );
+
+  // Item D2 corpus tools. They mirror the corpus API and require a
+  // key with the corpus scope, bound to an org, on the request.
+  async function resolveCorpusKey(): Promise<
+    { key: ApiKeyRow } | { error: string }
+  > {
+    const plaintext = requestHeaders
+      ? extractKeyHeader(requestHeaders)
+      : null;
+    if (!plaintext) {
+      return { error: "The corpus tools need an API key on the request." };
+    }
+    if (!isDbConfigured()) {
+      return { error: "API keys are not configured on this deployment." };
+    }
+    const key = await findKeyByPlaintext(plaintext).catch(() => null);
+    if (!key) return { error: "The API key was not accepted." };
+    if (key.revoked_at) return { error: "This API key has been revoked." };
+    if (!key.org_id) {
+      return { error: "This API key is not bound to an org." };
+    }
+    if (!key.scopes.includes("corpus")) {
+      return { error: "This API key does not carry the corpus scope." };
+    }
+    return { key };
+  }
+
+  function toolError(message: string) {
+    return {
+      content: [{ type: "text" as const, text: message }],
+      isError: true,
+    };
+  }
+
+  server.registerTool(
+    "submit_corpus_piece",
+    {
+      title: "Submit corpus piece",
+      description:
+        "Add one published piece to the org's corpus, as text or as a URL the server fetches. Needs a genre from the v1 list and an org-defined period label. A duplicate text within the org and period is refused with the existing piece named.",
+      inputSchema: {
+        period: z.string().describe("Org-defined period label, such as 2026-Q4"),
+        genre: z
+          .enum(GENRES as unknown as [string, ...string[]])
+          .describe("Genre from the v1 list"),
+        title: z.string().optional().describe("Piece title"),
+        text: z.string().optional().describe("The piece text"),
+        url: z
+          .string()
+          .optional()
+          .describe("A URL the server fetches when no text is given"),
+      },
+      annotations: mutating,
+    },
+    async ({ period, genre, title, text, url }) => {
+      const resolved = await resolveCorpusKey();
+      if ("error" in resolved) return toolError(resolved.error);
+      try {
+        const piece = await ingestPiece({
+          orgId: resolved.key.org_id!,
+          period,
+          genre,
+          title: title ?? null,
+          text,
+          url,
+        });
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(
+                {
+                  id: piece.id,
+                  period: piece.period,
+                  genre: piece.genre,
+                  title: piece.title,
+                  chars: piece.text.length,
+                  retention_until: piece.retention_until,
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      } catch (err) {
+        if (err instanceof DuplicatePieceError) {
+          return toolError(err.message);
+        }
+        return toolError(
+          err instanceof Error ? err.message : "Unknown error"
+        );
+      }
+    }
+  );
+
+  server.registerTool(
+    "run_corpus_read",
+    {
+      title: "Run corpus read",
+      description:
+        "Close a period and run the corpus read for the org: one run per genre in the period, measures computed, floors drawn from stored prior periods, one corpus_runs row and one corpus_run usage row per genre.",
+      inputSchema: {
+        period: z.string().describe("The period label to run"),
+      },
+      annotations: mutating,
+    },
+    async ({ period }) => {
+      const resolved = await resolveCorpusKey();
+      if ("error" in resolved) return toolError(resolved.error);
+      const runs = await runPeriod({
+        orgId: resolved.key.org_id!,
+        period,
+        keyId: resolved.key.id,
+      });
+      if (runs.length === 0) {
+        return toolError(
+          `No pieces stored for period "${period}" in this org.`
+        );
+      }
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: JSON.stringify(
+              runs.map((r) => ({
+                run_id: r.id,
+                genre: r.genre,
+                reading: r.reading,
+                piece_count: r.measures.pieceCount,
+              })),
+              null,
+              2
+            ),
+          },
+        ],
+      };
+    }
+  );
+
+  server.registerTool(
+    "get_corpus_report",
+    {
+      title: "Get corpus report",
+      description:
+        "Fetch a stored corpus run by id and render the genre report across all periods on record: the two axes as tables, the readings with their numbers, the floors with their baseline, and the named repeated openings.",
+      inputSchema: {
+        run_id: z.string().describe("The corpus run id"),
+      },
+      annotations: readOnly,
+    },
+    async ({ run_id }) => {
+      const resolved = await resolveCorpusKey();
+      if ("error" in resolved) return toolError(resolved.error);
+      const run = await getRun(run_id);
+      if (!run || run.org_id !== resolved.key.org_id) {
+        return toolError("No corpus run with that id for this org.");
+      }
+      const org = await getOrg(resolved.key.org_id!);
+      const genreRuns = await listRuns({
+        orgId: resolved.key.org_id!,
+        genre: run.genre,
+      });
+      const report = renderGenreReport({
+        orgName: org?.name ?? resolved.key.org_id!,
+        genre: run.genre,
+        runs: genreRuns,
+      });
+      return {
+        content: [{ type: "text" as const, text: report }],
       };
     }
   );
