@@ -1,0 +1,13 @@
+Northwind Planner Update: A Simpler Week for Your Team
+
+This week, our team shipped a new update for Northwind Planner. The update focuses on three things: offline mode, quick search, and team mentions. Every change in this release came from a customer conversation, a support ticket, or a note from the field.
+
+We heard from customers in Denver who asked for one place for files and notes. The team read every request, grouped them by theme, and picked the work that helped the most people first. This release is not just faster, but also easier to learn, easier to share, and easier to trust.
+
+Northwind Planner now includes offline mode on every plan, so teams can close the books without extra steps. The update also adds quick search for admins and and team mentions for everyone else on the team. Setup takes about five minutes, and your existing data stays right where it is.
+
+More than 5,100 teams tried the beta this month. They told us the new layout saved them about 22 percent of the time they used to spend on setup each week. The result is a calmer, clearer, and more predictable workflow for everyone, from the first login of the day to the last report of the week.
+
+The update is live now for all customers. Open Northwind Planner, look for the banner at the top of your home screen, and follow the short tour. If you run into anything that feels off, our support team answers within one business day.
+
+Try the new update today and tell us what you think. Your notes shape the next release, the same way they shaped this one. Thank you for building your week with Northwind Planner.

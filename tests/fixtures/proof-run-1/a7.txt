@@ -1,0 +1,65 @@
+What Is Compound Interest?
+
+Albert Einstein is rumored to have referred to compound interest as the eighth wonder of the world: “He who understands it, earns it, and he who doesn’t, pays it.” Whether or not the legendary physicist really did say this, these words of wisdom are worth heeding.
+
+Here’s everything you need to know about compound interest and how it can boost your savings.
+
+What is compound interest?
+
+When you deposit money into a savings vehicle — such as a high-yield savings account, certificate of deposit or money market account — your bank typically pays you interest on the balance. Over time, the interest earned is added back into your principal balance, therefore increasing your principal. And as your principal grows, so does the amount of interest you earn on it, which grows your money further.
+
+How frequently your interest compounds determines how often interest is paid out. Daily compounding increases your balance the quickest, but some banks compound monthly, quarterly or annually.
+
+How does compound interest work?
+
+To see how the power of compounding works, let’s turn to American history. Famed founding father (and penny-saving proponent) Benjamin Franklin stipulated in his will that two cities, Philadelphia and Boston, be gifted $2,000 each. The gifts were to be invested using compound interest with two payouts, one in 100 years and the other 200 years after his death. In 1990, the remaining account balances totaled $6.5 million, according to the New York Times.
+
+To figure out compound interest, there are plenty of handy calculators. But at the core of it all is this formula:
+
+Final balance = Initial balance (1+ interest rate / number of compounding periods) ^ number of compoundings per period x number of periods
+
+For example, if you deposit $10,000 into a savings account that earns 3% interest compounded annually, you’ll earn $300 per year. Adding that to the principal amount, you’ll have $10,300 at the end of the first 12 months.
+
+$10,000 (1 + 0.03/1) ^ 1×1 = $10,300
+
+If you deposit $10,000 into a savings account that earns 3% interest but compounds daily, you’ll wind up with $10,304.53.
+
+$10,000 (1 + 0.03/365) ^ 365×1 = $10,304.53
+
+That daily compounding earns you an additional $4.53. That doesn’t sound like much, but with larger amounts and over longer terms, the rate of return of compound interest can be significant.
+
+Note that a high-yield savings account or money market account may offer interest that compounds daily, weekly or monthly. Certificates of deposit typically compound daily or monthly, but it can vary depending on the bank.
+
+The difference between compound interest and simple interest
+
+Simple interest is different from compound interest because it’s calculated based on the principal, or original deposit. Earned interest isn’t incorporated or reinvested into the principal like it is with compound interest. Simple interest is used to calculate the interest charges on most mortgages, car loans and personal loans.
+
+Let’s say you have two accounts and you deposit $100,000 in each account. They both earn an annual interest rate of 5%. However, one account uses simple interest to calculate your return, and the other compounds your interest monthly.
+
+After 10 years, assuming the interest rate remained consistent, you’d earn $64,070.09 in interest with the account that compounds. You would have only $50,000 in interest in the account that uses a simple interest calculation.
+
+How to maximize your return with compound interest
+
+Save early
+
+The longer you leave your investment in a savings account or money market account, the more time it has to grow. If you have cash sitting in your checking account that isn’t earning interest, you should consider shifting that money to an interest-bearing account, like a high-yield savings account, to take advantage of compound interest.
+
+Open an account with a higher APY
+
+A high annual percentage rate isn’t ideal when you’re borrowing money. A high interest rate for a revolving line of credit, like a credit card, costs you over time as your balance grows as a result of compounding interest.
+
+However, when you lend money to the bank — which is essentially what you’re doing when you put money in a savings account, CD or other deposit account — a higher annual percentage yield, or APY, means you’ll earn more interest.
+
+Open an account with daily or monthly compounding
+
+Consider how frequently interest compounds when weighing your financial goals against different types of savings accounts. The more often interest compounds, the more interest you earn. An account that offers a slightly lower interest rate but compounds more frequently may be a better choice than an account with a slightly higher interest that compounds quarterly or annually.
+
+Keep in mind that APY reflects the total amount of interest paid in a year and takes into account both the interest rate and compound frequency. So if you’re comparing two savings accounts and know the APY for both, you can compare the APYs directly without worrying about how the compound frequency will affect your interest earnings.
+
+The bottom line
+
+When it’s on your side, compound interest is a powerful financial phenomenon that can help build your wealth faster. You can take advantage of the power of compound interest by selecting accounts that compound more frequently — daily or monthly — and earn the highest APY available. Understanding a few basics, such as the account’s compounding period, and comparing APYs can help you better implement a savings strategy that’ll provide a greater boost to your earning potential.
+
+But compound interest can also work against you when you owe money on certain types of debt, such as credit cards. In those cases, it’s still important to understand how compound interest works so you can better strategize how to pay off your debt and save on interest charges.
+
+Correction: An earlier version of this article was assisted by an AI engine and it mischaracterized some aspects of CDs, savings accounts and loan payments. Those points were all corrected. This version has been substantially updated by a staff writer.

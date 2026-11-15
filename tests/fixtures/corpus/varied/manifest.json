@@ -1,0 +1,218 @@
+[
+  {
+    "file": "v01.txt",
+    "title": "How to Make Wealth",
+    "sourceUrl": "https://paulgraham.com/wealth.html",
+    "datePublished": "May 2004",
+    "wordCount": 442,
+    "excerptWords": 442,
+    "fullWords": 8935
+  },
+  {
+    "file": "v02.txt",
+    "title": "Great Hackers",
+    "sourceUrl": "https://paulgraham.com/gh.html",
+    "datePublished": "July 2004",
+    "wordCount": 442,
+    "excerptWords": 442,
+    "fullWords": 5218
+  },
+  {
+    "file": "v03.txt",
+    "title": "What You Can't Say",
+    "sourceUrl": "https://paulgraham.com/say.html",
+    "datePublished": "January 2004",
+    "wordCount": 445,
+    "excerptWords": 445,
+    "fullWords": 5415
+  },
+  {
+    "file": "v04.txt",
+    "title": "The Age of the Essay",
+    "sourceUrl": "https://paulgraham.com/essay.html",
+    "datePublished": "September 2004",
+    "wordCount": 426,
+    "excerptWords": 426,
+    "fullWords": 4526
+  },
+  {
+    "file": "v05.txt",
+    "title": "How to Start a Startup",
+    "sourceUrl": "https://paulgraham.com/start.html",
+    "datePublished": "March 2005",
+    "wordCount": 444,
+    "excerptWords": 444,
+    "fullWords": 9742
+  },
+  {
+    "file": "v06.txt",
+    "title": "Why Nerds are Unpopular",
+    "sourceUrl": "https://paulgraham.com/nerds.html",
+    "datePublished": "February 2003",
+    "wordCount": 442,
+    "excerptWords": 442,
+    "fullWords": 5695
+  },
+  {
+    "file": "v07.txt",
+    "title": "Hackers and Painters",
+    "sourceUrl": "https://paulgraham.com/hp.html",
+    "datePublished": "May 2003",
+    "wordCount": 449,
+    "excerptWords": 449,
+    "fullWords": 5586
+  },
+  {
+    "file": "v08.txt",
+    "title": "Mind the Gap",
+    "sourceUrl": "https://paulgraham.com/gap.html",
+    "datePublished": "May 2004",
+    "wordCount": 447,
+    "excerptWords": 447,
+    "fullWords": 5685
+  },
+  {
+    "file": "v09.txt",
+    "title": "A Plan for Spam",
+    "sourceUrl": "https://paulgraham.com/spam.html",
+    "datePublished": "August 2002",
+    "wordCount": 444,
+    "excerptWords": 444,
+    "fullWords": 5270
+  },
+  {
+    "file": "v10.txt",
+    "title": "The Power of the Marginal",
+    "sourceUrl": "https://paulgraham.com/marginal.html",
+    "datePublished": "June 2006",
+    "wordCount": 448,
+    "excerptWords": 448,
+    "fullWords": 6055
+  },
+  {
+    "file": "v11.txt",
+    "title": "How to Be an Expert in a Changing World",
+    "sourceUrl": "https://paulgraham.com/ecw.html",
+    "datePublished": "December 2014",
+    "wordCount": 443,
+    "excerptWords": 443,
+    "fullWords": 1068
+  },
+  {
+    "file": "v12.txt",
+    "title": "Taste for Makers",
+    "sourceUrl": "https://paulgraham.com/taste.html",
+    "datePublished": "February 2002",
+    "wordCount": 448,
+    "excerptWords": 448,
+    "fullWords": 4322
+  },
+  {
+    "file": "v13.txt",
+    "title": "How to Get Startup Ideas",
+    "sourceUrl": "https://paulgraham.com/startupideas.html",
+    "datePublished": "November 2012",
+    "wordCount": 443,
+    "excerptWords": 443,
+    "fullWords": 7208
+  },
+  {
+    "file": "v14.txt",
+    "title": "Startup = Growth",
+    "sourceUrl": "https://paulgraham.com/growth.html",
+    "datePublished": "September 2012",
+    "wordCount": 441,
+    "excerptWords": 441,
+    "fullWords": 5343
+  },
+  {
+    "file": "v15.txt",
+    "title": "Frighteningly Ambitious Startup Ideas",
+    "sourceUrl": "https://paulgraham.com/ambitious.html",
+    "datePublished": "March 2012",
+    "wordCount": 443,
+    "excerptWords": 443,
+    "fullWords": 3780
+  },
+  {
+    "file": "v16.txt",
+    "title": "Schlep Blindness",
+    "sourceUrl": "https://paulgraham.com/schlep.html",
+    "datePublished": "January 2012",
+    "wordCount": 445,
+    "excerptWords": 445,
+    "fullWords": 840
+  },
+  {
+    "file": "v17.txt",
+    "title": "Cities and Ambition",
+    "sourceUrl": "https://paulgraham.com/cities.html",
+    "datePublished": "May 2008",
+    "wordCount": 435,
+    "excerptWords": 435,
+    "fullWords": 3605
+  },
+  {
+    "file": "v18.txt",
+    "title": "Do Things that Don't Scale",
+    "sourceUrl": "https://paulgraham.com/ds.html",
+    "datePublished": "July 2013",
+    "wordCount": 443,
+    "excerptWords": 443,
+    "fullWords": 4348
+  },
+  {
+    "file": "v19.txt",
+    "title": "Keep Your Identity Small",
+    "sourceUrl": "https://paulgraham.com/identity.html",
+    "datePublished": "February 2009",
+    "wordCount": 446,
+    "excerptWords": 446,
+    "fullWords": 869
+  },
+  {
+    "file": "v20.txt",
+    "title": "How to Disagree",
+    "sourceUrl": "https://paulgraham.com/disagree.html",
+    "datePublished": "March 2008",
+    "wordCount": 447,
+    "excerptWords": 447,
+    "fullWords": 1498
+  },
+  {
+    "file": "v21.txt",
+    "title": "Maker's Schedule, Manager's Schedule",
+    "sourceUrl": "https://paulgraham.com/makersschedule.html",
+    "datePublished": "July 2009",
+    "wordCount": 433,
+    "excerptWords": 433,
+    "fullWords": 1133
+  },
+  {
+    "file": "v22.txt",
+    "title": "How to Think for Yourself",
+    "sourceUrl": "https://paulgraham.com/think.html",
+    "datePublished": "November 2020",
+    "wordCount": 431,
+    "excerptWords": 431,
+    "fullWords": 3451
+  },
+  {
+    "file": "v23.txt",
+    "title": "How to Work Hard",
+    "sourceUrl": "https://paulgraham.com/hwh.html",
+    "datePublished": "June 2021",
+    "wordCount": 446,
+    "excerptWords": 446,
+    "fullWords": 3315
+  },
+  {
+    "file": "v24.txt",
+    "title": "How to Write Usefully",
+    "sourceUrl": "https://paulgraham.com/useful.html",
+    "datePublished": "February 2020",
+    "wordCount": 449,
+    "excerptWords": 449,
+    "fullWords": 2870
+  }
+]
