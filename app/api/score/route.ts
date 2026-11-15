@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyze } from "@/lib/analyzer";
 import type { Violation } from "@/lib/analyzer";
+import {
+  applyRateHeaders,
+  hasKeyHeader,
+  requireKeyOrAnon,
+  type KeyContext,
+} from "@/lib/api/auth";
+import { logUsageEvent } from "@/lib/api/metering";
 
 /**
  * POST /api/score — deterministic (Layer A) slop score.
@@ -147,7 +154,16 @@ function clientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  if (isRateLimited(clientIp(req))) {
+  // Item 3a: a request that presents an API key runs on the keyed
+  // path (hash verification, tier quota, usage logging). A request
+  // with no key header runs the anonymous path below, unchanged:
+  // per-IP limit, no logging, no storage.
+  let keyContext: KeyContext | null = null;
+  if (hasKeyHeader(req)) {
+    const auth = await requireKeyOrAnon(req, "score");
+    if (!auth.ok) return auth.response;
+    if (auth.context.kind === "key") keyContext = auth.context;
+  } else if (isRateLimited(clientIp(req))) {
     return NextResponse.json(
       { error: "Rate limit exceeded. Try again later." },
       { status: 429 }
@@ -187,9 +203,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const result = analyze(text, { model, narrative });
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     score: result.score,
     word_count: result.wordCount,
     categories: buildCategories(result.violations),
   });
+
+  if (keyContext) {
+    applyRateHeaders(response, keyContext);
+    await logUsageEvent({
+      keyId: keyContext.key.id,
+      endpoint: "score",
+      inputChars: text.length,
+      orgId: keyContext.key.org_id,
+    }).catch(() => undefined);
+  }
+
+  return response;
 }

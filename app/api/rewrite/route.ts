@@ -2,6 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { analyze } from "@/lib/analyzer";
 import { wrapDraft } from "@/lib/prompt";
+import {
+  applyRateHeaders,
+  hasKeyHeader,
+  requireKeyOrAnon,
+  type KeyContext,
+} from "@/lib/api/auth";
+import {
+  dailySpendCapUsd,
+  dailySpendEstimateUsd,
+  estimateCostUsd,
+  logFlywheelTriple,
+  logUsageEvent,
+} from "@/lib/api/metering";
 
 /**
  * POST /api/rewrite — hosted rewrite (roadmap item 2, second half).
@@ -82,7 +95,29 @@ function anthropicErrorMessage(status: unknown): string {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  if (isRateLimited(clientIp(req))) {
+  // Item 3a: keyed requests run on tier quota and are metered;
+  // anonymous requests keep the per-IP limit below and are never
+  // logged or stored.
+  let keyContext: KeyContext | null = null;
+  if (hasKeyHeader(req)) {
+    const auth = await requireKeyOrAnon(req, "rewrite");
+    if (!auth.ok) return auth.response;
+    if (auth.context.kind === "key") keyContext = auth.context;
+
+    // Cost circuit-breaker (item 3 section 3): when the day's
+    // estimated spend passes the cap, keyed rewrites stop until the
+    // window resets. The provider-side cap is the outer backstop.
+    const spent = await dailySpendEstimateUsd().catch(() => 0);
+    if (spent >= dailySpendCapUsd()) {
+      return NextResponse.json(
+        {
+          error:
+            "The rewrite service has reached its daily spend cap. Try again tomorrow.",
+        },
+        { status: 503 }
+      );
+    }
+  } else if (isRateLimited(clientIp(req))) {
     return NextResponse.json(
       { error: "Rewrite rate limit exceeded (20/hour). Try again later." },
       { status: 429 }
@@ -164,7 +199,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const scoreAfter = analyze(rewrite).score;
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     rewrite,
     score_before: scoreBefore,
     score_after: scoreAfter,
@@ -174,4 +209,38 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       output_tokens: message.usage.output_tokens,
     },
   });
+
+  if (keyContext) {
+    applyRateHeaders(response, keyContext);
+    const estCostUsd = estimateCostUsd(
+      model,
+      message.usage.input_tokens,
+      message.usage.output_tokens
+    );
+    await logUsageEvent({
+      keyId: keyContext.key.id,
+      endpoint: "rewrite",
+      inputChars: text.length,
+      tokensIn: message.usage.input_tokens,
+      tokensOut: message.usage.output_tokens,
+      estCostUsd,
+      orgId: keyContext.key.org_id,
+    }).catch(() => undefined);
+    // Flywheel logging covers keyed rewrites only, with a per-key
+    // opt-out (item 3 section 7). Anonymous traffic is never stored.
+    if (!keyContext.key.flywheel_opt_out) {
+      await logFlywheelTriple({
+        keyId: keyContext.key.id,
+        draft: text,
+        rewrite,
+        scoreBefore,
+        scoreAfter,
+        model,
+        tokensIn: message.usage.input_tokens,
+        tokensOut: message.usage.output_tokens,
+      }).catch(() => undefined);
+    }
+  }
+
+  return response;
 }
