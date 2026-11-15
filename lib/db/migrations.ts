@@ -8,8 +8,9 @@ import { getPool } from "./index";
  *
  * Order matters across specs:
  *   0001  item 3a: api_keys, usage_events, flywheel_triples
- * Later migrations land with the phases that need them (orgs and
- * check_runs with build spec Phase 1, corpus tables with Phase 2).
+ *   0002  build spec Phase 1 (B1): orgs, org_spec_versions,
+ *         org_exemplars, check_runs
+ * Corpus tables land with build spec Phase 2.
  */
 
 export interface Migration {
@@ -63,6 +64,56 @@ CREATE TABLE IF NOT EXISTS flywheel_triples (
   tokens_out integer
 );
 CREATE INDEX IF NOT EXISTS flywheel_triples_ts ON flywheel_triples (ts);
+`,
+  },
+  {
+    id: "0002_b1_orgs_specs_exemplars_check_runs",
+    sql: `
+CREATE TABLE IF NOT EXISTS orgs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  retention_days integer NOT NULL DEFAULT 365,
+  embeddings_opt_out boolean NOT NULL DEFAULT false
+);
+
+CREATE TABLE IF NOT EXISTS org_spec_versions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL REFERENCES orgs(id),
+  version integer NOT NULL,
+  spec jsonb NOT NULL,
+  created_by text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  note text,
+  UNIQUE (org_id, version)
+);
+
+CREATE TABLE IF NOT EXISTS org_exemplars (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL REFERENCES orgs(id),
+  title text NOT NULL,
+  source_url text,
+  text text NOT NULL,
+  text_hash text NOT NULL,
+  added_by text,
+  added_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS org_exemplars_org ON org_exemplars (org_id);
+
+CREATE TABLE IF NOT EXISTS check_runs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL REFERENCES orgs(id),
+  key_id uuid NOT NULL REFERENCES api_keys(id),
+  spec_version integer NOT NULL,
+  ruleset_version text NOT NULL,
+  analyzer_version text NOT NULL,
+  surface text NOT NULL,
+  input_chars integer NOT NULL DEFAULT 0,
+  input_hash text NOT NULL,
+  result jsonb NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS check_runs_org_created ON check_runs (org_id, created_at);
 `,
   },
 ];

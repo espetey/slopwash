@@ -39,6 +39,9 @@ export interface AuditReport {
   clientLabel: string;
   sampleSource: string;
   date: string;
+  /** Instrument versions, from the constants in lib/analyzer. */
+  analyzerVersion: string;
+  rulesetVersion: string;
   spec: OrgSpec | null;
   pieces: AuditPieceResult[];
   totals: {
