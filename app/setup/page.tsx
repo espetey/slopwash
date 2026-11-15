@@ -530,7 +530,7 @@ message = client.beta.messages.create(
       </main>
 
       <footer className="py-8 text-center text-xs text-zinc-600">
-        slopwash &middot; <a href="https://github.com/espetey/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">GitHub</a> &middot; <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">@slopwash</a> &middot; &copy; 2026 Slopwash International Corporation, Laniakea, LLX &middot; no tracking
+        slopwash &middot; <a href="https://github.com/espetey/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">GitHub</a> &middot; <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">@slopwash</a> &middot; &copy; 2026 Slopwash &middot; <a href="/privacy" className="hover:text-zinc-400 transition-colors">Data handling</a> &middot; aggregate analytics, no ad trackers
       </footer>
     </div>
   );

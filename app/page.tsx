@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, type ReactNode } from "react";
 import Image from "next/image";
+import { track } from "@vercel/analytics";
 import { personas } from "@/lib/personas";
 import { buildPrompt, SKILL_FRONTMATTER, type PromptMode } from "@/lib/prompt";
 import HeroDemo from "./_components/hero-demo";
@@ -109,26 +110,40 @@ export default function Home() {
         <a href="https://github.com/espetey/slopwash" target="_blank" rel="noopener noreferrer" className="absolute top-4 right-4 text-zinc-600 hover:text-zinc-300 transition-colors" aria-label="GitHub">
           <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         </a>
-        <Image src="/slopwash-md.png" alt="slopwash" width={480} height={112} className="h-24 sm:h-32 w-auto" priority />
-        <p className="mt-3 text-zinc-400 text-sm max-w-lg mx-auto">
-          The quality layer for AI-assisted writing. Slopwash scores any text
-          against a published standard for AI writing patterns, names what
-          fails, and rewrites it clean.
+        <Image src="/slopwash-md.png" alt="slopwash" width={480} height={112} className="h-14 sm:h-16 w-auto" priority />
+        <p className="mt-8 text-[11px] uppercase tracking-[0.2em] text-teal-300/80">
+          Editorial quality control for AI writing
+        </p>
+        <h1 className="mt-3 text-4xl sm:text-6xl font-semibold tracking-tight text-zinc-100 max-w-3xl">
+          Catch the AI writing patterns before your readers do.
+        </h1>
+        <p className="mt-4 text-zinc-400 text-sm sm:text-base max-w-xl mx-auto">
+          Slopwash scores any text against a published standard for AI writing
+          patterns, names what fails, and rewrites it clean. Find the repeated
+          frames, the stock vocabulary, and the claims with nothing under
+          them, then revise with every finding in view.
+        </p>
+        <p className="mt-3 text-xs text-zinc-600">
+          Free to try &middot; Open standard &middot; Every finding explained
         </p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
-          <a href="#how-to-use" className="nav-link-haze">How to use</a>
-          <a href="#what-it-catches" className="nav-link-haze">What it catches</a>
-          <a href="#audit" className="nav-link-haze">The audit</a>
-          <a href="#for-teams" className="nav-link-haze">For teams</a>
-          <a href="/setup" className="nav-link-haze">Setup</a>
-          <a href="/scanner" className="nav-link-haze">Scanner</a>
-          <a href="/benchmark" className="nav-link-haze">Benchmark</a>
+          <a href="#how-to-use" className="text-zinc-400 hover:text-zinc-100 transition-colors">How to use</a>
+          <a href="#what-it-catches" className="text-zinc-400 hover:text-zinc-100 transition-colors">What it catches</a>
+          <a href="#audit" className="text-zinc-400 hover:text-zinc-100 transition-colors">The audit</a>
+          <a href="#for-teams" className="text-zinc-400 hover:text-zinc-100 transition-colors">For teams</a>
+          <a href="/setup" className="text-zinc-400 hover:text-zinc-100 transition-colors">Setup</a>
+          <a href="/scanner" className="text-zinc-400 hover:text-zinc-100 transition-colors">Scanner</a>
+          <a href="/benchmark" className="text-zinc-400 hover:text-zinc-100 transition-colors">Benchmark</a>
+          <a href="/privacy" className="text-zinc-400 hover:text-zinc-100 transition-colors">Data handling</a>
         </div>
       </header>
 
       {/* Main */}
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 pb-20">
-        <HeroDemo />
+      <main className="flex-1 w-full pb-20">
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+          <HeroDemo />
+        </div>
+        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6">
 
         {/* Format selector */}
         <section className="mb-6">
@@ -315,6 +330,11 @@ export default function Home() {
               <p className="text-xs text-zinc-500">Terms that drift inside one document, and a voice that changes between the first paragraph and the last.</p>
             </div>
           </div>
+          <p className="text-xs text-zinc-600 mt-4">
+            Slopwash evaluates writing patterns. A score does not determine
+            whether a human or an AI wrote a text, and a higher score does not
+            guarantee better writing.
+          </p>
         </section>
 
         {/* Info section */}
@@ -374,7 +394,7 @@ export default function Home() {
           </p>
           <p className="text-sm text-zinc-300">
             $249 per audit. Book one with a message on X:{" "}
-            <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" className="text-teal-400 hover:text-teal-300 transition-colors">@slopwash</a>
+            <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" onClick={() => track("audit_cta_clicked")} className="text-teal-400 hover:text-teal-300 transition-colors">@slopwash</a>
           </p>
         </section>
 
@@ -410,6 +430,22 @@ export default function Home() {
             is in build. Ask on X:{" "}
             <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-zinc-300 transition-colors">@slopwash</a>
           </p>
+          <div className="mt-5 rounded-lg border border-teal-500/30 bg-teal-500/5 px-4 py-4">
+            <p className="text-sm text-zinc-200">
+              Founding pilot: $199/month
+            </p>
+            <p className="text-sm text-zinc-500 mt-1">
+              A small number of teams run the full standing setup: an org spec
+              in their voice, standing checks, corpus reports, and API access,
+              with a monthly review of the findings. Pilots are set up
+              directly and billed monthly. There is no self-serve checkout
+              while signup is in build.
+            </p>
+            <p className="text-sm text-zinc-300 mt-2">
+              Ask about a pilot on X:{" "}
+              <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" onClick={() => track("pilot_cta_clicked")} className="text-teal-400 hover:text-teal-300 transition-colors">@slopwash</a>
+            </p>
+          </div>
         </section>
 
         {/* Setup guide pointer */}
@@ -426,11 +462,12 @@ export default function Home() {
             Open the setup guide
           </a>
         </section>
+        </div>
       </main>
 
       {/* Footer */}
       <footer className="py-8 text-center text-xs text-zinc-600">
-        slopwash &middot; <a href="https://github.com/espetey/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">GitHub</a> &middot; <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">@slopwash</a> &middot; &copy; 2026 Slopwash International Corporation, Laniakea, LLX &middot; no tracking
+        slopwash &middot; <a href="https://github.com/espetey/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">GitHub</a> &middot; <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">@slopwash</a> &middot; &copy; 2026 Slopwash &middot; <a href="/privacy" className="hover:text-zinc-400 transition-colors">Data handling</a> &middot; aggregate analytics, no ad trackers
       </footer>
     </div>
   );

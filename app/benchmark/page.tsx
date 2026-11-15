@@ -72,6 +72,8 @@ export default function BenchmarkPage() {
         <a href="https://github.com/espetey/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">GitHub</a>
         {" "}&middot;{" "}
         <a href="https://x.com/slopwash" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">@slopwash</a>
+        {" "}&middot;{" "}
+        <a href="/privacy" className="hover:text-zinc-400 transition-colors">Data handling</a>
       </footer>
     </div>
   );
