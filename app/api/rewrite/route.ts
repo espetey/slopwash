@@ -226,9 +226,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       estCostUsd,
       orgId: keyContext.key.org_id,
     }).catch(() => undefined);
-    // Flywheel logging covers keyed rewrites only, with a per-key
-    // opt-out (item 3 section 7). Anonymous traffic is never stored.
-    if (!keyContext.key.flywheel_opt_out) {
+    // Flywheel logging covers keyed rewrites only, and only for keys
+    // that have opted in (policy change, Nov 15, 2026; item 3
+    // section 7). Anonymous traffic is never stored.
+    if (keyContext.key.flywheel_opt_in) {
       await logFlywheelTriple({
         keyId: keyContext.key.id,
         draft: text,

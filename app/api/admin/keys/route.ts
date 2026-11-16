@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     name,
     tier,
     scopes,
-    flywheelOptOut: body.flywheel_opt_out === true,
+    flywheelOptIn: body.flywheel_opt_in === true,
     orgId,
   });
 
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
       name: k.name,
       tier: k.tier,
       scopes: k.scopes,
-      flywheel_opt_out: k.flywheel_opt_out,
+      flywheel_opt_in: k.flywheel_opt_in,
       org_id: k.org_id,
       created_at: k.created_at,
       revoked_at: k.revoked_at,

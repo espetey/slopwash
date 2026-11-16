@@ -73,11 +73,12 @@ export default function PrivacyPage() {
           </h2>
           <p className="text-sm text-zinc-500">
             Calls made with an API key are metered: the key, the endpoint, and
-            usage counts are recorded. Unless the key has opted out, the draft
-            and the rewrite from a keyed call are also kept as an evaluation
-            triple, the input the analyzer improves from. Triples are purged
-            after 90 days. Opting out is a per-key setting, applied when the
-            key is issued or on request at any time.
+            usage counts are recorded. The draft and the rewrite from a keyed
+            call are kept as an evaluation triple, the input the analyzer
+            improves from, only when the key has opted in. The default is
+            that nothing is kept. Opting in is a per-key setting, applied
+            when the key is issued or on request at any time. Triples that
+            are stored are purged after 90 days.
           </p>
         </section>
 
