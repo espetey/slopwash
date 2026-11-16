@@ -27,8 +27,10 @@ import {
  * No model is called; this is the cheap, fast, interpretable layer.
  * The LLM-judge layer (Layer B) is not built yet and is not applied here.
  *
- * Calibration scale: 90-100 clean human-grade prose; 70-89 light tells;
- * 50-69 obvious AI texture; below 50 slop.
+ * The score is a density scale (analyzer 1.1.0): 100 minus the
+ * severity-weighted hits per 1,000 words, with texts under 200
+ * words scored as if spread over 200 words. 100 means no findings;
+ * the floor is reached at 100 weighted hits per 1,000 words.
  *
  * Request:  { "text": string, "model"?: string, "narrative"?: boolean }
  * Response: { "score": number, "word_count": number,

@@ -2,7 +2,7 @@ import type { AnalysisResult, AnalyzeOptions, Violation } from "./types";
 import { countWords, splitSentences } from "./utils";
 import {
   computeSectionSummaries,
-  computeOverallScore,
+  computeHeadlineScore,
 } from "./scoring";
 
 export { rescoreViolations, severityWeightSum } from "./scoring";
@@ -25,7 +25,9 @@ export type { SectionSummary, Severity } from "./types";
  * ruleset revision. Check runs and org API responses record both, so
  * a stored result can be tied to the exact instrument that made it.
  */
-export const ANALYZER_VERSION = "1.0.0";
+// 1.1.0: headline score moved to the density scale; scores across
+// this version break are not directly comparable.
+export const ANALYZER_VERSION = "1.1.0";
 export const RULESET_VERSION = "1.0";
 
 export function analyze(
@@ -54,12 +56,13 @@ export function analyze(
     }
   }
 
+  const wordCount = countWords(text);
   const sections = computeSectionSummaries(violations);
-  const score = computeOverallScore(sections);
+  const score = computeHeadlineScore(violations, wordCount);
 
   return {
     score,
-    wordCount: countWords(text),
+    wordCount,
     sentenceCount: splitSentences(text).length,
     violations,
     sections,

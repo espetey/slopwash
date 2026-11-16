@@ -9,15 +9,6 @@ const SECTION_NAMES: Record<number, string> = {
   6: "Consistency",
 };
 
-const SECTION_WEIGHTS: Record<number, number> = {
-  1: 0.25,
-  2: 0.25,
-  3: 0.2,
-  4: 0.15,
-  5: 0.1,
-  6: 0.05,
-};
-
 const SEVERITY_COST: Record<string, number> = {
   high: 5,
   moderate: 3,
@@ -52,20 +43,6 @@ export function computeSectionSummaries(
   return sections;
 }
 
-export function computeOverallScore(sections: SectionSummary[]): number {
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const section of sections) {
-    const weight = SECTION_WEIGHTS[section.section] ?? 0;
-    weightedSum += section.score * weight;
-    totalWeight += weight;
-  }
-
-  if (totalWeight === 0) return 100;
-  return Math.round(clamp(weightedSum / totalWeight, 0, 100));
-}
-
 /** Severity-weighted hit count: high 5, moderate 3, low 1. */
 export function severityWeightSum(violations: Violation[]): number {
   return violations.reduce(
@@ -75,16 +52,37 @@ export function severityWeightSum(violations: Violation[]): number {
 }
 
 /**
+ * Headline score (analyzer 1.1.0): a density scale. 100 means no
+ * findings; each severity-weighted hit per 1,000 words costs one
+ * point, so the scale floor is reached at 100 weighted hits per
+ * 1,000 words. Texts shorter than 200 words are scored as if spread
+ * over 200 words, so a short paste is not judged on a handful of
+ * words. Section scores stay as the breakdown; this formula is the
+ * headline number only.
+ */
+export function computeHeadlineScore(
+  violations: Violation[],
+  wordCount: number
+): number {
+  const effectiveWords = Math.max(wordCount, 200);
+  const density = (severityWeightSum(violations) / effectiveWords) * 1000;
+  return clamp(Math.round(100 - density), 0, 100);
+}
+
+/**
  * Rescore a violation list from scratch (build spec section 3). The org
  * view drops disabled rules and remaps severities, then calls this so
  * the org score is computed by the same code as the universal score.
  * The universal score itself never passes through here with edits;
  * analyze() output is returned untouched.
  */
-export function rescoreViolations(violations: Violation[]): {
+export function rescoreViolations(
+  violations: Violation[],
+  wordCount: number
+): {
   sections: SectionSummary[];
   score: number;
 } {
   const sections = computeSectionSummaries(violations);
-  return { sections, score: computeOverallScore(sections) };
+  return { sections, score: computeHeadlineScore(violations, wordCount) };
 }
