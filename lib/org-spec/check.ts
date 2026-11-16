@@ -67,7 +67,7 @@ export function checkWithSpec(
       const override = spec.rules.severityOverrides[v.rule];
       return override ? { ...v, severity: override } : v;
     });
-  const rescored = rescoreViolations(orgViolations);
+  const rescored = rescoreViolations(orgViolations, universal.wordCount);
 
   const termFindings = checkOrgTerms(text, spec.terms);
 
