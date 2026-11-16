@@ -11,6 +11,7 @@ import { getPool } from "./index";
  *   0002  build spec Phase 1 (B1): orgs, org_spec_versions,
  *         org_exemplars, check_runs
  *   0003  build spec Phase 2 (C1): corpus_pieces, corpus_runs
+ *   0004  flywheel opt-in: api_keys.flywheel_opt_in
  */
 
 export interface Migration {
@@ -150,6 +151,18 @@ CREATE TABLE IF NOT EXISTS corpus_runs (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS corpus_runs_org_genre ON corpus_runs (org_id, genre, created_at);
+`,
+  },
+  {
+    // Policy change, Nov 15, 2026 (Erik's call): flywheel retention
+    // flips from opt-out to opt-in. Draft/rewrite triples are stored
+    // only for keys with flywheel_opt_in = true; the default is that
+    // nothing is kept. The old flywheel_opt_out column stays in place
+    // for history and is no longer read or written.
+    id: "0004_flywheel_opt_in",
+    sql: `
+ALTER TABLE api_keys
+  ADD COLUMN IF NOT EXISTS flywheel_opt_in boolean NOT NULL DEFAULT false;
 `,
   },
 ];

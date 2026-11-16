@@ -16,7 +16,7 @@ export interface ApiKeyRow {
   name: string;
   tier: Tier;
   scopes: string[];
-  flywheel_opt_out: boolean;
+  flywheel_opt_in: boolean;
   org_id: string | null;
   created_at: string;
   revoked_at: string | null;
@@ -43,14 +43,14 @@ export async function createKey(input: {
   name: string;
   tier?: Tier;
   scopes?: string[];
-  flywheelOptOut?: boolean;
+  flywheelOptIn?: boolean;
   orgId?: string | null;
 }): Promise<{ key: ApiKeyRow; plaintext: string }> {
   const plaintext = generateKeyPlaintext();
   const keyHash = hashKey(plaintext);
   const keyPrefix = plaintext.slice(0, 12);
   const rows = await query<ApiKeyRow>(
-    `INSERT INTO api_keys (key_hash, key_prefix, name, tier, scopes, flywheel_opt_out, org_id)
+    `INSERT INTO api_keys (key_hash, key_prefix, name, tier, scopes, flywheel_opt_in, org_id)
      VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
     [
@@ -59,7 +59,7 @@ export async function createKey(input: {
       input.name,
       input.tier ?? "free",
       input.scopes ?? ["score", "rewrite"],
-      input.flywheelOptOut ?? false,
+      input.flywheelOptIn ?? false,
       input.orgId ?? null,
     ]
   );

@@ -81,8 +81,10 @@ export default function TermsPage() {
           <p className="text-sm text-zinc-500">
             Keys are issued to a named holder, carry the tier and scopes set at
             issue, and can be revoked for use that breaks the stated rate
-            limits or for resale of access. Data handling for keyed calls is
-            described on the{" "}
+            limits or for resale of access. Draft and rewrite text from a
+            keyed call is kept only when the key has opted in to evaluation
+            storage; by default nothing is kept. Data handling for keyed
+            calls is described on the{" "}
             <Link href="/privacy" className="text-zinc-300 underline underline-offset-2">data handling page</Link>.
           </p>
         </section>
